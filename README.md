@@ -1,9 +1,9 @@
-# dsh-record-replay
+# dsh-record-and-replay
 
 [![CI](https://github.com/kakaCat/dsh-record-and-replay/actions/workflows/ci.yml/badge.svg)](https://github.com/kakaCat/dsh-record-and-replay/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-DSH host plugin for Cua Driver-only browser recording and replay.
+DSH host plugin for Cua Driver-only browser recording and replay (plugin id: `dsh-record-replay`).
 
 > npm package: `dsh-record-and-replay` (the plugin id and CLI stay `dsh-record-replay`; the CLI also answers to `dsh-record-and-replay`).
 
