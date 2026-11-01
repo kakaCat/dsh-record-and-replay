@@ -11,6 +11,19 @@ DSH 插件：把 Agent 通过 Cua Driver 执行的浏览器/桌面操作录成�
 > npm 包名是 `dsh-record-and-replay`；插件 id 和 CLI 仍叫 `dsh-record-replay`，CLI 也响应 `dsh-record-and-replay`。
 > 完整参数、事件格式和内部实现见 [REFERENCE.md](REFERENCE.md)。
 
+## 定位
+
+记录的是 **Agent 的 Cua 工具调用**，不是人类屏幕录制，也不是像素级视频理解：
+
+| | 本插件 | 人类屏幕录制 |
+|---|---|---|
+| 记录对象 | `cua_record_action` 等语义动作 | 鼠标/键盘/像素 |
+| 回放方式 | 重新观察页面、解析语义目标、逐步验证 | 播放视频或重放坐标 |
+| 产物 | `steps.jsonl`、Run、失败证据、可安装 Skill | 一段视频 |
+
+适合：浏览器流程回归、把成功流程沉淀成 Skill、审计 Agent 实际点了什么。
+不适合：录制人的日常桌面操作、没有语义目标的纯 canvas 操作。
+
 ## 界面预览
 
 独立只读 panel（演示数据）：
