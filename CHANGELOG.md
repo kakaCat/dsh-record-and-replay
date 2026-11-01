@@ -25,7 +25,7 @@
 - Privacy suppression: URL deny patterns, private-window binding refusal,
   `suppressed.jsonl` / `suppressedCount`, and extra secret redaction patterns.
 - Optional model-assisted Skill drafting (`cua_skill_generate mode: "model"`)
-  with strict JSON parsing and template fallback.
+  with strict JSON parsing, `memory.md` companion output, and template fallback.
 - Open-source readiness: MIT LICENSE, contribution/security/conduct docs,
   issue/PR templates, public-boundary check, package metadata.
 - CI now runs the activity-view Playwright suite on every push/PR.

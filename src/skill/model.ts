@@ -37,6 +37,8 @@ export interface SkillDraft {
   readonly site: string
   readonly flow: string
   readonly markdown: string
+  /** Optional compact memory written next to SKILL.md when model drafting produced one. */
+  readonly memory?: string
   readonly ambiguities: readonly string[]
   readonly status: SkillDraftStatus
   readonly createdAt: string
@@ -179,6 +181,14 @@ export function assertSkillDraftShape(draft: SkillDraft): SkillDraft {
   assertSiteOrFlow(draft.flow, 'flow')
   if (typeof draft.markdown !== 'string' || draft.markdown.trim().length === 0) {
     throw new SkillServiceError('SKILL_INVALID', 'markdown must be a non-empty string')
+  }
+  if (draft.memory !== undefined) {
+    if (typeof draft.memory !== 'string' || draft.memory.trim().length === 0) {
+      throw new SkillServiceError('SKILL_INVALID', 'memory must be a non-empty string when provided')
+    }
+    if (draft.memory.length > 4000) {
+      throw new SkillServiceError('SKILL_INVALID', 'memory must be at most 4000 characters')
+    }
   }
   if (!Array.isArray(draft.ambiguities) || draft.ambiguities.some(item => typeof item !== 'string')) {
     throw new SkillServiceError('SKILL_INVALID', 'ambiguities must be a string array')

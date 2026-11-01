@@ -212,6 +212,10 @@ export class FsSkillStore implements SkillStore {
     return path.join(this.draftDir(draftId), 'SKILL.md')
   }
 
+  private draftMemoryPath(draftId: string): string {
+    return path.join(this.draftDir(draftId), 'memory.md')
+  }
+
   async saveDraft(draft: SkillDraft): Promise<string> {
     assertSkillDraftShape(draft)
     slugSegment(draft.site, 'site')
@@ -225,6 +229,9 @@ export class FsSkillStore implements SkillStore {
     try {
       await atomicWrite(path.join(dir, 'draft.json'), `${JSON.stringify(draft, null, 2)}\n`)
       await atomicWrite(path.join(dir, 'SKILL.md'), draft.markdown.endsWith('\n') ? draft.markdown : `${draft.markdown}\n`)
+      if (draft.memory !== undefined) {
+        await atomicWrite(this.draftMemoryPath(draft.draftId), draft.memory.endsWith('\n') ? draft.memory : `${draft.memory}\n`)
+      }
     } catch (error) {
       await rm(dir, { recursive: true, force: true }).catch(() => undefined)
       throw error
@@ -237,7 +244,11 @@ export class FsSkillStore implements SkillStore {
     try {
       const draft = JSON.parse(await readFile(path.join(dir, 'draft.json'), 'utf8')) as SkillDraft
       const markdown = await readFile(this.draftMarkdownPath(draftId), 'utf8')
-      return { draft: { ...draft, markdown }, draftPath: this.draftMarkdownPath(draftId) }
+      const memory = (await readFile(this.draftMemoryPath(draftId), 'utf8').catch(() => draft.memory))?.trim()
+      return {
+        draft: { ...draft, markdown, ...(memory === undefined || memory.length === 0 ? {} : { memory }) },
+        draftPath: this.draftMarkdownPath(draftId),
+      }
     } catch (error) {
       if (error instanceof SkillServiceError) throw error
       throw new SkillServiceError('SKILL_DRAFT_NOT_FOUND', `draft ${draftId} not found`, { cause: error })

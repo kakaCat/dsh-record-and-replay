@@ -603,11 +603,14 @@ fails the pointer/coordinate check; the draft then falls back to the template an
 records why in `ambiguities`. Without a model service or a resolved route the same
 fallback applies. The five reference prompt ids are available in
 `src/skill/drafting.ts` (`describe-activity`, `suggest-next-actions`, `draft-memory`,
-`draft-replay-plan`, `create-replay-skill`).
+`draft-replay-plan`, `create-replay-skill`). When the model returns a `memory` field, the
+draft directory also gets `memory.md`; `cua_skill_review` returns it as `memory`.
 
 Skill storage:
 
 - Drafts: `.dsh/skill-library/_drafts/<draftId>/`
+  - `SKILL.md` and `draft.json`
+  - `memory.md` when `mode: "model"` produced a compact memory
 - Installed: `.dsh/skill-library/skills/<site>/<flow>/SKILL.md` with immutable copies under `versions/v<N>/`
 - Published for DSH: after install, the same body is copied to `<workspace>/.dsh/skills/<name>/SKILL.md` with a `description` and a "How to run" section, so DSH's own skill catalog can load it (`.dsh/skill-library` stays authoritative)
 

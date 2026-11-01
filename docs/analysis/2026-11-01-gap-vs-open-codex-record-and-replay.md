@@ -129,7 +129,7 @@ scope: dsh-record-and-replay vs ../open-codex-record-and-replay
 | 确定性草案 | 有（offline generator） | 有（八章节 Markdown） | ✅ |
 | LLM 评估器 | 有（官方契约是 Codex app-server 的 model/list + thread/start + turn/start；开源实现用 `codex exec` 镜像同一结果形状） | one-shot 会话模型增强 Summary/Preconditions/Ambiguities；无 thread/turn | 🟡 |
 | Prompt library | 5 条：`describe-activity` / `suggest-next-actions` / `draft-memory` / `draft-replay-plan` / `create-replay-skill` | 5 条 id 已落地；实际调用 drafting prompt | 🟡 |
-| `memory.md` | 有（`draft-memory`） | 无（prompt id 已留） | ❌ |
+| `memory.md` | 有（`draft-memory`） | model 模式写 `_drafts/<draftId>/memory.md` | ✅ |
 | 审查/安装/版本/索引/反馈 | 只有 draft + materialize | 六工具全生命周期 + 版本 + `needs_review` | ⭐ |
 | 发布到宿主技能目录 | `skill-creator` handoff | 投影到 `.dsh/skills/<name>/SKILL.md` | ✅ |
 | 参数化与安全校验 | 较弱 | 强（秘密/坐标/Verification） | ⭐ |
@@ -239,7 +239,7 @@ scope: dsh-record-and-replay vs ../open-codex-record-and-replay
 - 严格 JSON 解析 + `skill/security.ts` 校验；畸形、明文秘密、坐标或没有模型路由时回落模板，并把原因写进 `ambiguities`。
 - 参考项目的 5 条 prompt id 已在 `src/skill/drafting.ts` 落地（`describe-activity` / `suggest-next-actions` / `draft-memory` / `draft-replay-plan` / `create-replay-skill`）。
 
-**未做**：完整 evaluator（app-server thread/turn）、`memory.md` 产物、把整份 replay plan 交给模型重写。
+**未做**：完整 evaluator（app-server thread/turn）、把整份 replay plan 交给模型重写。
 
 **验收**：model 模式能生成带自然语言 Summary/Preconditions/Ambiguities 的草案；无模型/失败时模板仍可用；秘密/坐标仍被拒。
 

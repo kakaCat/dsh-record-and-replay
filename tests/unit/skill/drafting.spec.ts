@@ -31,14 +31,16 @@ describe('skill drafting prompts', () => {
     expect(prompt.prompt).toContain('1. Navigate to `https://shop.test/`.')
     expect(prompt.prompt).toContain('2 step(s) were suppressed')
     expect(prompt.prompt).toContain('"summary"')
+    expect(prompt.prompt).toContain('"memory"')
   })
 
   it('parses fenced JSON and drops unusable fields', () => {
-    const parsed = parseDraftEnrichment('```json\n{"summary":"ok","preconditions":["a",42,""],"ambiguities":["b"]}\n```')
+    const parsed = parseDraftEnrichment('```json\n{"summary":"ok","preconditions":["a",42,""],"ambiguities":["b"],"memory":"fact"}\n```')
     expect(parsed).toEqual({
       summary: 'ok',
       preconditions: ['a'],
       ambiguities: ['b'],
+      memory: 'fact',
     })
     expect(parseDraftEnrichment('not json')).toBeUndefined()
     expect(parseDraftEnrichment('{"summary": 42}')).toEqual({})

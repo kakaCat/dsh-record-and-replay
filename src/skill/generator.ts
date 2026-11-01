@@ -184,6 +184,7 @@ export async function generateSkillDraft(
   }
 
   let rendered = renderDraft(context)
+  let memory: string | undefined
   if (mode === 'model') {
     if (options.model === undefined) {
       ambiguities.push('Model drafting was requested but no host model port is available; the template draft was used.')
@@ -211,6 +212,13 @@ export async function generateSkillDraft(
         if (inspectSkillMarkdown(candidate.markdown).length > 0) {
           throw new Error('model draft failed the secret or pointer-safety check')
         }
+        if (enrichment.memory !== undefined) {
+          const memoryIssues = inspectSkillMarkdown(enrichment.memory)
+          if (memoryIssues.some(issue => issue.code === 'SKILL_SECRET_DETECTED' || issue.code === 'SKILL_COORDINATE_ONLY')) {
+            throw new Error('model memory failed the secret or pointer-safety check')
+          }
+          memory = enrichment.memory
+        }
         rendered = candidate
       } catch (error) {
         ambiguities.push(
@@ -228,6 +236,7 @@ export async function generateSkillDraft(
     site,
     flow,
     markdown: rendered.markdown,
+    ...(memory === undefined ? {} : { memory }),
     ambiguities,
     status: 'ready',
     createdAt: (options.now?.() ?? new Date()).toISOString(),

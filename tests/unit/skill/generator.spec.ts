@@ -312,6 +312,7 @@ describe('generateSkillDraft', () => {
           summary: 'A model-written summary of the checkout flow.',
           preconditions: ['The cart contains one item.'],
           ambiguities: ['The payment provider may vary.'],
+          memory: 'The checkout flow needs one cart item.',
         }),
       }
       const draft = await generateSkillDraft(
@@ -322,6 +323,8 @@ describe('generateSkillDraft', () => {
       expect(draft.markdown).toContain('- The cart contains one item.')
       expect(draft.ambiguities).toContain('The payment provider may vary.')
       expect(draft.markdown).toContain('natural-language sections drafted by test/model')
+      expect(draft.memory).toBe('The checkout flow needs one cart item.')
+      expect((await store.readDraft(draft.draftId)).draft.memory).toBe('The checkout flow needs one cart item.')
       expect(inspectSkillMarkdown(draft.markdown)).toEqual([])
     } finally {
       await rm(root, { recursive: true, force: true })

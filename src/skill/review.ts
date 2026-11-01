@@ -89,6 +89,8 @@ export interface SkillDraftSummary {
   readonly createdAt: string
   /** `## Summary` 正文（原样，保留 Markdown 段落）。 */
   readonly summary: string
+  /** Model-drafted memory, when the draft has `memory.md`. */
+  readonly memory?: string
   /** `## Verification` 正文；为空时不会返回摘要（先抛 SKILL_INVALID）。 */
   readonly verification: string
   /** 未决歧义，来自草案的 `ambiguities` 字段。 */
@@ -213,6 +215,7 @@ export function summarizeSkillDraft(draft: SkillDraft, draftPath = ''): SkillDra
     status: draft.status,
     createdAt: draft.createdAt,
     summary: sectionBody(draft.markdown, 'Summary'),
+    ...(draft.memory === undefined ? {} : { memory: draft.memory }),
     verification,
     ambiguities: draft.ambiguities,
     provenance: listLines(sectionBody(draft.markdown, 'Provenance')),

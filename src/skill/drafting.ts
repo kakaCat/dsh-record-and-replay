@@ -26,6 +26,8 @@ export interface DraftEnrichment {
   readonly summary?: string
   readonly preconditions?: readonly string[]
   readonly ambiguities?: readonly string[]
+  /** Compact factual memory for `_drafts/<draftId>/memory.md`. */
+  readonly memory?: string
 }
 
 export interface SkillPrompt {
@@ -109,8 +111,8 @@ export function buildDraftPrompt(input: DraftPromptInput): { system: string; pro
       ...input.steps.map((step, index) => `${String(index + 1)}. ${step}`),
       suppressed.trim(),
       'Return JSON with this exact shape:',
-      '{"summary": "one paragraph describing the workflow and its goal", "preconditions": ["short condition", "..."], "ambiguities": ["short ambiguity", "..."]}',
-      'Keep the summary under 500 characters. Keep each array item under 300 characters and at most 8 items.',
+      '{"summary": "one paragraph describing the workflow and its goal", "preconditions": ["short condition", "..."], "ambiguities": ["short ambiguity", "..."], "memory": "compact factual memory of the workflow"}',
+      'Keep the summary under 500 characters. Keep each array item under 300 characters and at most 8 items. Keep memory under 4000 characters and omit credentials or personal data.',
     ].join('\n'),
   }
 }
@@ -130,10 +132,12 @@ export function parseDraftEnrichment(text: string): DraftEnrichment | undefined 
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return undefined
   const record = parsed as Record<string, unknown>
   const summary = typeof record['summary'] === 'string' ? record['summary'].trim() : undefined
+  const memory = typeof record['memory'] === 'string' ? record['memory'].trim() : undefined
   const preconditions = stringArray(record['preconditions'])
   const ambiguities = stringArray(record['ambiguities'])
   return {
     ...(summary === undefined || summary.length === 0 || summary.length > 500 ? {} : { summary }),
+    ...(memory === undefined || memory.length === 0 || memory.length > 4000 ? {} : { memory }),
     ...(preconditions === undefined ? {} : { preconditions }),
     ...(ambiguities === undefined ? {} : { ambiguities }),
   }
