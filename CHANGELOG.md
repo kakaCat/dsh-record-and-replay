@@ -28,6 +28,7 @@
   with strict JSON parsing and template fallback.
 - Open-source readiness: MIT LICENSE, contribution/security/conduct docs,
   issue/PR templates, public-boundary check, package metadata.
+- CI now runs the activity-view Playwright suite on every push/PR.
 
 ### Fixed
 

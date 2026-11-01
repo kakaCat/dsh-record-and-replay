@@ -297,7 +297,7 @@ scope: dsh-record-and-replay vs ../open-codex-record-and-replay
 | Issue / PR 模板 | ✅ | bug/feature forms + PR checklist |
 | `package.json` 元数据 | ✅ | repository/homepage/bugs/author/keywords/publishConfig |
 | 发布流水线 | ✅ | `.github/workflows/release.yml`：tag → 校验 → npm publish --provenance |
-| CI 覆盖 | 🟡 | 已加 public-boundary；Playwright e2e 仍只在本地/手动跑 |
+| CI 覆盖 | ✅ | typecheck + vitest + build + public-boundary + Playwright activity-view e2e |
 | 公开边界 | ✅ | `scripts/check-public-boundary.mjs` + CI；工作树中的个人路径已清理 |
 | 需求/验收材料 | ✅ | 整个 `docs/requirements/` 已移出公开树（本地 `tmp/private-requirements/`） |
 | git 历史 | 🟡 | 旧提交仍含路径/截图；`pnpm check:history` 扫描，重写配方见 `docs/guides/public-release.md` |
