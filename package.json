@@ -41,11 +41,13 @@
     }
   },
   "files": [
-    "dist",
-    "cordis.patch.yml",
-    "README.md",
+    "CHANGELOG.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "README.md",
+    "REFERENCE.md",
+    "cordis.patch.yml",
+    "dist",
+    "docs/screenshots"
   ],
   "engines": {
     "node": ">=22",

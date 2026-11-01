@@ -2,682 +2,177 @@
 
 [![CI](https://github.com/kakaCat/dsh-record-and-replay/actions/workflows/ci.yml/badge.svg)](https://github.com/kakaCat/dsh-record-and-replay/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![DSH](https://img.shields.io/badge/DSH-%E2%89%A50.2.1--rc.5-blue)](package.json)
+[![Node ≥ 22](https://img.shields.io/badge/node-%3E%3D%2022-339933)](package.json)
+[![GitHub repo](https://img.shields.io/badge/github-kakaCat%2Fdsh--record--and--replay-blue)](https://github.com/kakaCat/dsh-record-and-replay)
 
-DSH host plugin for Cua Driver-only browser recording and replay (plugin id: `dsh-record-replay`).
+DSH 插件：把 Agent 通过 Cua Driver 执行的浏览器/桌面操作录成可复核的 **Recording**，支持确定性回放、右侧栏面板与实时 HUD、会话导出，并把成功流程沉淀为可审查的 **Skill**。
 
-> npm package: `dsh-record-and-replay` (the plugin id and CLI stay `dsh-record-replay`; the CLI also answers to `dsh-record-and-replay`).
+> npm 包名是 `dsh-record-and-replay`；插件 id 和 CLI 仍叫 `dsh-record-replay`，CLI 也响应 `dsh-record-and-replay`。
+> 完整参数、事件格式和内部实现见 [REFERENCE.md](REFERENCE.md)。
 
-## Install
+## 界面预览
 
-```bash
-dsh plugin --profile <profile> add link:/path/to/dsh-record-replay
+独立只读 panel（演示数据）：
+
+| 面板总览：分类 / 场景 / 录制 | 录制详情：用例意图、Runs 与回放 |
+|---|---|
+| ![面板总览](docs/screenshots/panel-overview.png) | ![录制详情](docs/screenshots/panel-detail.png) |
+
+在 DSH 里，同一个面板挂在右侧栏；左栏页脚的「录制回放」入口在录制中会显示计时、步数和 Stop/Discard。
+
+## 特性
+
+- **录制**：`cua_record_start` / `cua_record_action` / `cua_record_stop` 记录浏览器语义动作（navigate、click、setValue、scroll、drag、assert）和桌面 AX 动作；支持 intent、幂等键、30 分钟自动停、`endReason`、丢弃（`cancelled`）。
+- **确定性回放**：`cua_replay_start` 逐步重新观察、解析语义目标、执行并验证；失败即停，写 `run.json`、`steps.jsonl`、失败证据和 WebM 录屏。
+- **面板与 HUD**：右侧栏跨项目浏览/搜索/统计/回收站/重命名/键盘导航；左栏页脚实时显示录制计时，可 Stop / 二次确认 Discard。
+- **Skill 知识库**：`cua_skill_generate` → `cua_skill_review` → 人工确认安装 → `cua_skill_search` / `cua_skill_load`；`mode: "model"` 可用当前会话模型增强 Summary/Preconditions/Ambiguities，并生成 `memory.md`，失败自动回落模板。
+- **会话导出**：`cua_record_export` 输出 `session.json`、`events.jsonl`（`session.started` / `agent.action` / `session.ended`）和可选 `suppressed.jsonl`。
+- **隐私与同意**：`setValue` 全掩码；URL 拒绝列表、私密窗口拦截、独立的 `suppressed.jsonl`；录制同意元数据与可选 `explicit` 门。
+- **可回归**：`cua_test_run` / `dsh-record-replay test` 支持套件、JUnit、超时、失败继续；CI 覆盖 typecheck、单测、build、`check:boundary` 和 Playwright e2e。
+
+## 工作方式
+
+```mermaid
+flowchart LR
+  A[Agent] -->|cua_record_action| B[Cua Driver]
+  B --> C[Chrome / Edge / macOS window]
+  A --> D[Recording Store]
+  D --> E[右侧栏面板 + 页脚 HUD]
+  D --> F[Semantic Replay Runner]
+  F --> G[Run + evidence + WebM]
+  D --> H[Skill Draft]
+  H --> I[人工审查 / 安装]
 ```
 
-The package declares `dsh.bundle.patch`; the profile loader inserts the host plugin automatically. Recording, replay and the skill library are enabled by default; add a profile override only to disable a feature or change paths/limits.
+录制是 Agent 动作的**旁路**：工具调用成功后写 `steps.jsonl`，不阻塞浏览器动作；回放读取 completed Recording，重新解析语义目标而不是重放坐标。
 
-## Config
+## 快速开始
+
+### 前置要求
+
+- macOS；Node.js ≥ 22；DSH ≥ `0.2.1-rc.5`
+- `cua-driver` ≥ 0.38 在 `PATH`，且 DSH 已获得 macOS Accessibility / Screen Recording 权限
+- `native` transport 是 opt-in；需要宿主 bundle 身份为 `com.trycua.driver`
+
+### 安装
+
+```bash
+git clone https://github.com/kakaCat/dsh-record-and-replay.git
+dsh plugin --profile <profile> add link:/path/to/dsh-record-and-replay
+```
+
+重启 DSH Host 并刷新页面；插件清单出现 `record-replay` 即生效。录制、回放、Skill 默认开启，配置见下一节。
+
+### 第一次录制与回放
+
+```text
+cua_record_start        { "title": "登录并加入购物车", "intent": "标准用户登录，确认商品页出现加入购物车入口" }
+cua_record_bind_browser { "launch": "isolated", "profileName": "demo" }
+cua_record_action       { "action": { "kind": "navigate", "url": "https://www.saucedemo.com/" } }
+cua_record_action       { "action": { "kind": "setValue", "target": { "role": "textbox", "name": "Username" }, "value": "standard_user" } }
+cua_record_action       { "action": { "kind": "click", "target": { "role": "button", "name": "Login" } } }
+cua_record_action       { "action": { "kind": "assert", "check": { "kind": "url", "contains": "/inventory" } } }
+cua_record_stop
+cua_replay_start        { "recordingId": "rec_..." }
+```
+
+也可以直接用左栏页脚入口打开面板：浏览 Recording、看 Runs 和回放视频；录制中页脚显示计时和 Stop/Discard。
+
+### 生成 Skill
+
+```text
+cua_skill_generate { "recordingId": "rec_...", "mode": "model" }
+cua_skill_review   { "draftId": "draft_..." }
+# 人工确认后
+cua_skill_install  { "draftId": "draft_...", "decision": "confirmed" }
+```
+
+`mode: "model"` 可选；没有模型路由或模型输出不合格时自动回落模板，原因写入 `ambiguities`。
+
+### 导出会话
+
+```text
+cua_record_export { "recordingId": "rec_..." }
+# 默认写 .dsh/record-replay/exports/<recordingId>/session
+```
+
+导出目录只含 `session.json`、`events.jsonl` 和可选的 `suppressed.jsonl`；这是 Agent action log，不伪造 `mouse.click` / `window.changed` 等人类事件。
+
+## 配置
+
+最小配置（全部默认开启）：
 
 ```yaml
 - id: record-replay
   name: dsh-record-replay
   config:
-    transport: mcp           # default mcp (0.38 CLI daemon); native is opt-in
-    transportFallback: true  # native failure falls back to MCP and reports why
     recording:
-      enabled: true        # default true
-      maxDurationSeconds: 1800  # auto-stop with endReason max_duration; 0 disables
-      consent: implicit    # off | implicit | explicit (explicit requires cua_record_start consent: true)
+      maxDurationSeconds: 1800
+      consent: implicit
       privacy:
-        deniedUrlPatterns: []      # case-insensitive substrings; matched steps go to suppressed.jsonl
-        blockPrivateBrowsing: true # refuse existing windows whose title is an incognito/private window
+        deniedUrlPatterns: []
+        blockPrivateBrowsing: true
     replay:
-      enabled: true        # default true
+      video: true
     skill:
-      enabled: true        # default true; set false to make write tools (generate/install/feedback) return FEATURE_DISABLED
-      rootDir: .dsh/skill-library
-      autoFeedback: true   # replay terminal states automatically feed skill counters (idempotent by runId)
+      autoFeedback: true
 ```
 
-## Transports
+完整配置（transport、容量、视频、工具白名单、路径等）见 [REFERENCE.md](REFERENCE.md)。
 
-| Transport | Runtime | Existing-profile attach | Notes |
-|---|---|---|---|
-| `native` (opt-in) | `@trycua/cua-driver` 0.28 in an isolated child process (`native-host.mjs`) | granted per bind by our `DriverAuthorizationHost` inside the child (exact pid + window only) | Requires a host whose bundle identity is `com.trycua.driver`; inside DSH (`com.deepseek.dsh`) it preflights as unavailable and falls back to MCP |
-| `mcp` (default) | `cua-driver mcp` child process, 0.38 CLI | the daemon's own existing-profile grant | Process isolation, verified M0 path |
+## 隐私与安全
 
-The plugin connects on the first browser action, probes `health_report`, then enforces the per-transport version floor (native 0.28.0, MCP 0.38.0). If the preferred transport fails, the driver falls back to the other one once and records the reason; `cua_record_replay_status` reports `transportActive` and `transportFallbackReason`.
+- Recording、Run、Skill 都在工作区 `.dsh/` 下；`setValue` 值落盘前掩码，replay `values` 只在进程内使用。
+- `recording.privacy.deniedUrlPatterns` 命中后步骤进 `suppressed.jsonl`，不进 `steps.jsonl`；私密窗口默认拒绝绑定。
+- 面板与 Host 路由同源鉴权；Stop/Discard 从 manifest 的 `ownerSessionId` 派生 principal，不伪造归属。
+- 漏洞上报、Cua 权限和录制数据边界见 [SECURITY.md](SECURITY.md)。
 
-The native SDK never loads in the DSH process: `src/cua/native-host.ts` is built to `dist/native-host.mjs`, spawned with `ELECTRON_RUN_AS_NODE=1`, and speaks MCP over stdio. The parent side is the same `CuaTransport` contract as the CLI path, so recording and replay do not care which one is active.
+## 兼容性
 
-Native is pre-flighted: when `health_report` reports a failing `bundle_identity` check, the child cannot pass macOS TCC checks for inspecting browser processes, so the plugin falls back to MCP before the first bind instead of failing it.
-
-## Slash commands
-
-When DSH's `commands` service is mounted (interactive UI), the plugin registers six human commands that never go through the model:
-
-| Command | Effect |
+| 项 | 要求 |
 |---|---|
-| `/record-status` | workspace, feature switches, transport and the active recording |
-| `/record-start <title>` | start a recording in this workspace (records an explicit consent grant) |
-| `/record-stop` | stop the active recording owned by this session |
-| `/record-discard` | discard the active recording: kept for audit, marked `cancelled`, never replayed or turned into a Skill |
-| `/record-launch [profileName]` | launch a driver-owned browser and bind it; a profile name keeps logins across runs |
-| `/record-bind <pid> <windowId>` | bind this session to a local browser window |
+| DSH | `>=0.2.1-rc.5 <0.3.0`（`engines.dsh`） |
+| Node.js | ≥ 22 |
+| 平台 | macOS（Cua Driver / AX） |
+| 浏览器 | Chrome / Edge；支持 `existing`、`isolated`、`desktop` 三种绑定 |
+| Cua | `mcp` 需 `cua-driver ≥ 0.38`；`native` 需 `@trycua/cua-driver` 0.28 |
+| Panel | DSH 右侧栏 + 左栏页脚；独立 `panel` 命令只读 |
 
-Command registration is isolated in its own `commands` injection, so a composition without the commands service still gets the agent tools.
+## 已知限制
 
-## Recording lifecycle
+- 浏览器绑定不支持 `key`；需要按键时用桌面绑定 + `cua_desktop_press_key`。
+- 不做人类桌面采集；只记录 Agent 的 Cua 工具调用。
+- URL 策略只检查动作里出现的 URL；无私密窗口标题时无法识别。
+- 独立 `panel` 进程没有回放/控制服务，重跑和 Stop/Discard 只在 DSH 挂载下可用。
+- 更多边界见 [REFERENCE.md](REFERENCE.md) 的「Current limitations」。
 
-A recording has one writer per workspace and ends in one of four terminal
-states: `completed`, `failed`, `interrupted` or `cancelled`. Every close writes
-an `endReason` to the manifest:
+## 文档
 
-| `endReason` | Status | When |
-|---|---|---|
-| `tool_stopped` | `completed` | `cua_record_stop` or `/record-stop` |
-| `max_duration` | `completed` | reached `recording.maxDurationSeconds` (default 1800 s) |
-| `cancelled` | `cancelled` | `cua_record_discard` or `/record-discard` |
-| `failed` | `failed` | the writer closed after a failure |
-| `interrupted` | `interrupted` | startup recovery or store shutdown found a half-written recording |
+| 文档 | 内容 |
+|---|---|
+| [REFERENCE.md](REFERENCE.md) | 完整配置、transport、事件/存储格式、回放语义、桌面与 CLI 细节 |
+| [docs/guides/cua-record-replay.md](docs/guides/cua-record-replay.md) | 交付结论、现状与已知缺口 |
+| [docs/design/record-replay-panel.md](docs/design/record-replay-panel.md) | 面板设计、交互与实现取舍 |
+| [docs/analysis/2026-11-01-gap-vs-open-codex-record-and-replay.md](docs/analysis/2026-11-01-gap-vs-open-codex-record-and-replay.md) | 与参考开源实现的对等审计 |
+| [docs/guides/public-release.md](docs/guides/public-release.md) | 公开仓库/历史清理流程 |
+| [CHANGELOG.md](CHANGELOG.md) | 版本变更 |
 
-- **Auto-stop.** The service schedules one timer per active recording; expiry
-  calls the same stop path with `max_duration`. `recording.maxDurationSeconds: 0`
-  disables the timer.
-- **Consent.** `recording.consent` is `implicit` by default: the manifest stores
-  `{mode, scope, grantedAt, grantedBy}` and the scope text is visible to the
-  caller. Set `explicit` to require `cua_record_start` to pass
-  `consent: true`; `/record-start` records an explicit grant because a human ran
-  the command (unless `recording.consent` is `off`). Passing `consent: false` is refused in every mode.
-- **Discard.** `cua_record_discard` closes the active recording as `cancelled`
-  and leaves the directory in place for audit. It is not replayable and cannot
-  produce a Skill; use the panel's 移到回收站 to delete the files.
-- **Startup recovery.** Opening a workspace store runs `recoverStore`: stale
-  locks are reclaimed, a half-written `steps.jsonl` is backed up and truncated,
-  and any recording still marked `recording` becomes `interrupted`. This runs
-  once per workspace runtime, so a crashed previous session no longer leaves an
-  unrecoverable "recording" entry.
-
-## Privacy
-
-Recording has a suppression path that is separate from redaction:
-
-- **URL policy.** `recording.privacy.deniedUrlPatterns` holds case-insensitive
-  substrings. A `navigate` URL, a semantic target's `origin`/`path`, a
-  `wait`/`assert` URL, or a drag endpoint that matches is suppressed: the step
-  (and every following step, until a `navigate` to a non-denied URL) is written
-  to `suppressed.jsonl` instead of `steps.jsonl`. A suppressed step keeps only
-  `stepId`/`callId`/`actionKind`/`reason`/`at` — never the URL, page text, or
-  typed value.
-- **Private windows.** `recording.privacy.blockPrivateBrowsing` (default on)
-  refuses `launch: "existing"` when the bound window title is an
-  incognito/private window (`Incognito`, `InPrivate`, `Private Browsing`, `无痕`,
-  …). Turn it off if a flow intentionally uses a private window; `isolated`
-  launches are never treated as private.
-- **Counts.** `suppressedCount` is updated in the manifest, returned by
-  `cua_record_query`/Host DTO, shown in the panel detail as **已抑制 N 步**, and
-  added to a Skill draft's ambiguities when non-zero.
-- **Redaction.** Typed `setValue` values are always masked; result/error strings
-  additionally redact credit-card numbers, AWS access keys, `sk-`/`api-` keys,
-  auth headers and secret assignments.
-
-Limitations: the policy only sees URLs that appear in the action (a target-less
-click carries no URL), and once blocked it stays blocked until a navigate to a
-non-denied URL; `allowedUrlPatterns` is not implemented yet.
-
-## Session export
-
-`cua_record_export` writes one **terminal** recording into a small portable
-directory (read-only over the Store; the destination must not exist):
-
-```
-session.json      metadata, status, endReason, suppressed count, relative file names
-events.jsonl      session.started / agent.action / session.ended
-suppressed.jsonl  copied verbatim when the URL policy suppressed steps
-```
-
-- Default destination: `<store>/exports/<recordingId>/session`; a `destination`
-  argument must stay workspace-relative. The write stages in a sibling
-  directory and renames, so a failed export leaves no half-written session.
-- `events.jsonl` records `agent.action` entries (id, seq, timestamp, origin,
-  action, status, duration, result summary, error, evidence). It deliberately
-  does **not** map `navigate` to `window.changed` or synthesize `mouse.click`:
-  this is an agent action log, not the reference human event stream.
-- `session.json` carries `format: "dsh-record-replay-session"` / `formatVersion: 1`,
-  `eventsPath`, optional `suppressedEventsPath`/`suppressedCount`, `endReason`,
-  `stepsSha256` and the consent record when one was stored.
-- Only recordings owned by the calling session and already terminal
-  (`completed` / `failed` / `interrupted` / `cancelled`) are exportable; an
-  active recording returns `INVALID_ARGUMENT`.
-- Suppressed steps never enter `events.jsonl`; `suppressed.jsonl` keeps only
-  stepId/callId/actionKind/reason/at.
-
-## Recording intent
-
-`cua_record_start` takes an optional `intent` string — the user requirement or
-use case the recording demonstrates. It is stored in the recording manifest and
-returned by `cua_record_query`:
-
-```json
-{"title":"B站搜索：明日方舟周年庆","intent":"输入关键词并确认结果页出现活动入口。"}
-```
-
-- Recordings started without it stay valid; the panel then shows the title plus
-  a **未填写用例** mark.
-- Existing recordings can be annotated without touching recording files by
-  adding an `intent` to `.dsh/record-replay/index.json` `assignments`
-  (`{"rec_…":{"intent":"…"}}`). The index value wins over the manifest and is
-  labelled **index 补注** in the panel.
-- The panel shows the intent in the Runs list and above the replay video; long
-  text collapses to three lines with an expand control.
-
-## Bind modes
-
-`cua_record_bind_browser` supports three modes:
-
-| `launch` | Needs | Browser | Use it for |
-|---|---|---|---|
-| `existing` (default) | `pid` + `windowId` | the user's running Chrome/Edge window (their profile, their logins) | flows that depend on an authenticated session |
-| `isolated` | nothing | a disposable, driver-owned Chromium launched by Cua | demos, CI, public pages, and whenever Cua refuses to attach to the existing window |
-| `isolated` + `profileName` | nothing | a **named**, persistent driver-owned Chromium profile | flows that need a login: sign in once inside that window, later runs reuse the same profile |
-| `desktop` | `pid` + `windowId` | a macOS AX window (Electron/native app) | desktop flows: `click`/`setValue`/`key`/`assert` map to AX actions; `navigate` and URL assertions are unsupported |
-
-`profileName` must be 1-64 path-safe ASCII characters (`[A-Za-z0-9._-]`). The named profile lives under Cua's driver-owned storage, not your Chrome profile: credentials persist there, so use a dedicated account and clear it when it is no longer needed.
-
-Before each named-profile launch the plugin patches the profile's `Preferences`:
-
-- `profile.exit_type = "Normal"` / `exited_cleanly = true` — Chrome stops offering "restore pages?" after Cua terminates the browser;
-- `session.restore_on_startup = 1` — Chrome persists session cookies, so a login survives Cua's process teardown and even a daemon restart.
-
-Give Chrome ~30 seconds after a fresh login before releasing the binding; newly written cookies still follow Chrome's own flush timer.
-
-`isolated` returns the launched `pid`/`windowId`; `cua_replay_start` accepts `launch: "isolated"` to replay into a fresh driver-owned browser. An isolated browser ends with its Cua session, so release or end the session when you are done.
-
-Cua 0.38 may refuse `existing` attachment with `background_unavailable` (the browser is on the same Space and attaching would steal focus) or `browser_wrong_target_refused` (it could not prove the window with an exact English "New Tab" button). Neither is a DSH configuration problem; use `launch: "isolated"` or move the browser window to another Space.
-
-## Replay semantics
-
-- Only steps that finished with `status: "success"` are replayed; failed steps stay in the recording as audit evidence and are skipped instead of replaying the same error.
-- A target that is not rendered yet is retried for up to 5 seconds (`TARGET_NOT_FOUND` only), so replay at machine pace survives SPA render delays.
-- Ambiguous locators can be disambiguated with `target.index` (0-based, counted over visible matches). Elements Cua reports as `offscreen` are skipped while at least one `in_viewport` match exists; hidden elements never appear in the refs. Without an index the driver fails with `TARGET_AMBIGUOUS` and names the visible match count.
-- `click` honours `button`/`count` on browser bindings: left single click keeps `browser_click`; `button: "right"` maps to `browser_pointer` `right_click`; `count: 2` maps to `double_click`. `count: 3` and right + `count > 1` are rejected with `ACTION_UNSUPPORTED`.
-- A left single click is **verified, not assumed**. Cua's `browser_click` reports `effect: "unverifiable"`: it proves the CDP mouse event was dispatched, not that the control activated. The driver compares the semantic snapshot the click was resolved against with the page afterwards (URL, element role/name/value, focus/checked states) for up to 1.5 s. If nothing changed it re-resolves the target on a fresh snapshot and re-dispatches **once** as a synthetic DOM click (`input_route: "dom_event"`), which runs inside the page and bypasses native input routing. If that also changes nothing the step fails with `ACTION_UNCONFIRMED` instead of reporting a click that never happened. Right/double clicks are never retried.
-- `ACTION_UNCONFIRMED` is distinct from `ACTION_UNSUPPORTED` (no route exists) and `ASSERTION_FAILED` (the action may have happened; the expectation did not hold).
-- A click that opens a new tab **in the same browser window** moves the binding onto the tab that becomes active (for example `<a target="_blank">` or Bilibili's 热门). The driver re-reads the active tab for up to ~2 s after the click and replaces Cua's target id and tab id together, because Cua mints new session-scoped handles on every window query. A background tab, a different browser target/window, or a failed refresh leaves the binding on the original tab; the click keeps its success and the step summary says why it did not follow. If the followed tab is still on a provisional frame, the next observe re-mints the active pair and retries instead of surfacing `browser_route_unavailable`.
-- `scroll` maps to Cua's `browser_pointer` `scroll` with `delta_x`/`delta_y` in CSS pixels. With a `target` the driver resolves the ref and scrolls at it (Cua brings the ref into view, then applies the delta); without a target it scrolls at the viewport centre, measured once per binding from Cua's screenshot metadata and cached (the wheel needs a point: Cua rejects a scroll with neither `ref` nor `x`/`y`). A zero delta is rejected with `INVALID_ARGUMENT`.
-- `key` is **not supported on browser bindings** and stays `ACTION_UNSUPPORTED`. Cua 0.38 has no browser-scoped key tool: `browser_pointer` only does pointer gestures, `browser_type` `mode: "keystrokes"` types text (the letters of "Enter" are typed, not the key), and `press_key`/`hotkey` are native-window tools that do not reach a background tab. The action is therefore excluded from the **browser** capability table; use a `desktop` binding with `cua_desktop_press_key`, or replace the step with `click`/`assert` (the browser `wait` action is also unsupported). Desktop bindings still advertise `key` (and replay plans pass their launch mode, so desktop key steps stay executable).
-- Cua's opaque `target_id` is **not** stable across window queries. Never mix a `target_id` from one `get_browser_state` response with a `tab_id` from another; that pair is refused with `browser_tab_not_found`.
-
-## Assertions
-
-`cua_record_action` accepts a read-only `assert` action, so a replay can prove an outcome instead of only delivering inputs:
-
-```json
-{"kind":"assert","check":{"kind":"url","contains":"/settings"}}
-{"kind":"assert","check":{"kind":"text","contains":"Saved"}}
-{"kind":"assert","check":{"kind":"element","target":{"role":"button","name":"Pay"},"exists":true}}
-{"kind":"assert","check":{"kind":"value","target":{"role":"textbox","name":"Email"},"equals":"a@b.c"}}
-```
-
-- Assertions are evaluated on the live semantic snapshot with the same visible-match rule as `target.index`; hidden/offscreen duplicates do not satisfy them. `text` checks element names/values in that snapshot, not arbitrary rendered page text (e.g. an `<h1>` that Cua does not expose as a ref cannot be asserted this way).
-- `css` targets are rejected for assertions (semantic locators only).
-- A failed assertion ends the Run with `ASSERTION_FAILED`, writes `step-<seq>/error.json`, and skips the remaining steps.
-
-## Desktop (macOS AX)
-
-Cua can drive whole windows, not only browsers. The plugin exposes a small desktop tool set (registered when `tools.allow` is empty):
-
-- `cua_desktop_state` — snapshot one window: AX role/label/value/enabled (read-only);
-- `cua_desktop_click` — click one element, re-snapshotting first and targeting by role/label;
-- `cua_desktop_set_value` — write a value (use this instead of `type_text` in Electron);
-- `cua_desktop_press_key` — press one key;
-- `cua_desktop_scroll` — scroll the window (or one element); Electron content needs foreground delivery;
-- `cua_desktop_drag` — drag from one AX element to another;
-- `cua_desktop_assert` — assert AX element existence/enabled state;
-- `cua_desktop_screenshot` — capture the window to an absolute PNG path.
-
-`drag` is replayable on both binding kinds:
-
-- **browser bindings** resolve `from`/`to` to page refs and send Cua's `browser_pointer` drag; this works for pointer-event pages and HTML5 drag-and-drop;
-- **desktop bindings** move between AX element centres in **window-local screenshot pixels** (`screenshot_frame`), never raw AX `frame` — AX frames are screen coordinates, and using them shifted every drag by the window origin/title bar (the earlier "delivered but no drop" failure);
-- HTML5 drag-and-drop follows the hardware pointer. When Cua refuses background delivery (`background_unavailable` / `drag_and_drop_session`) the desktop driver retries once with `delivery_mode: "foreground"`, which briefly fronts the window and moves the pointer.
-
-Record/replay works on desktop bindings too: bind with `launch: "desktop"`, then use the normal `cua_record_*` tools; `cua_replay_start` accepts `launch: "desktop"` with the same `pid`/`windowId`. `navigate` and URL assertions are refused on a desktop binding.
-
-Constraints learned from live testing on the DSH desktop app:
-
-- `element_token` is snapshot-scoped; every action re-snapshots and resolves by role/label.
-- `type_text` is refused for Electron web content (`background_unavailable`); `set_value` works.
-- `verify_state` reports `unknown / untrusted_source` for Electron web content, so assertions use the AX observation instead.
-- Click effects are reported as `unverifiable`; assert afterwards to prove the outcome.
-- AX `frame` is screen coordinates; `screenshot_frame` (returned with a window capture) is window-local screenshot pixels and is what pixel actions expect.
-
-## Replay video
-
-Every replay records the screen to WebM (VP9, 1280 wide, 10 fps, CRF 36, no audio) and returns `videoPath`:
-
-```
-runs/<runId>/video/replay.webm
-```
-
-- enabled by default; set `{ "replay": { "video": false } }` to turn it off;
-- `DSH_REPLAY_VIDEO_INPUT` overrides the avfoundation input (default `0:none` = first screen, no audio);
-- capture is whole-screen, so other windows may appear; macOS needs Screen Recording permission;
-- if ffmpeg cannot start, the replay still succeeds and simply has no video.
-
-## Video usage
+## 开发
 
 ```bash
-node scripts/video-usage.mjs            # 每个 recording 的视频数量/体积 + 合计
-node scripts/video-usage.mjs --root DIR # 指定 recordings 根目录
-```
-
-清理由 `replay.videoMaxRuns`（默认 50，每个 recording 保留最近 N 个成功 Run 的视频）在每次回放后自动执行；失败/取消的 Run 视频不会被删。
-
-## Global record/replay panel (M1.6 browse + M2 search/stats + M3 replay/trash/keyboard)
-
-The panel lives in the **DSH right sidebar**. A **录制回放 / Record & Replay**
-row at the foot of the left sidebar opens it as a right-column tab
-(`sidebarRight.openTab("recordReplay")`); it never replaces the conversation's
-main panel. Why the footer row instead of the old `sidebar.panellist` icon: a
-panellist row is hard-wired by the sidebar shell to select a matching main
-panel, while the right column is session-scoped. The footer action owns its own
-button, which is what lets it expand the right sidebar instead.
-
-The panel lists DSH workspaces, scans each project's `.dsh/record-replay`, and
-never changes the recording data or registers another host tool. Data travels
-over DSH's authenticated same-origin connection at `/api/record-replay/*`; the
-panel does not start a second port. The right-column variant keeps the
-category/scenario tree on top and opens the selected recording, its Runs, its
-intent and the video in a collapsible pane **below** it (50% by default,
-draggable, own scroll), so the list stays visible while browsing. Narrow
-viewports of the standalone page use the same stacked layout.
-
-M2 adds a **全部项目** entry to the project selector. In that mode the header
-shows system-wide cards (projects, recordings, runs, failure rate, video
-footprint) and the left column lists every project with its own recording/run/
-failure/video numbers. Typing in the search box switches the left column to a
-**cross-project, project-grouped result list**; clicking a result switches to
-that project and selects the recording in one step. Cross-project search scans
-projects with a bounded concurrency of 4 and returns at most 100 matches by
-default (`limit` up to 500), reporting `total`/`returned`/`truncated` so the UI
-can tell the user when to narrow the term. Project and recording lists are
-paginated with `limit`/`offset` (default 50, max 200); the client uses TanStack
-Query infinite queries with explicit **加载更多** controls while keeping the
-virtualized tree/result rendering for long lists. Stats are derived from the
-same scanner output as the lists — no extra file walks.
-
-M3 adds the two actions that used to require the CLI, plus keyboard navigation:
-
-- **重跑 (replay)** — the recording detail has a **重跑** button. It asks for
-  confirmation (an isolated Chromium window is launched and write actions in
-  the recording really execute), then `POST /replay` starts a background Run and
-  returns `{ runId }` immediately. The detail polls `GET /recording` every
-  1.2 s while the Run is `preparing`/`running`, adopts the new Run, and shows
-  its status; after `completed` the generated WebM is playable in the panel.
-  Runs are written by the same workspace `ReplayPort` the CLI and
-  `cua_replay_start` use, so they land in the original recording's
-  `runs/<runId>/` (`run.json`, `steps.jsonl`, `video/replay.webm`) exactly like
-  a CLI replay. `launch` is fixed to `isolated`: the panel never takes over the
-  browser window a session has bound.
-- **移到回收站 (safe delete)** — moves the whole recording directory to
-  `<project>/.dsh/record-replay/trash/<recordingId>-<compact UTC stamp>/` with
-  one atomic `rename`. Nothing is deleted, the manifest/steps/runs/assets stay
-  byte-identical, and the recording's `index.json` assignment is removed in the
-  same request. Collisions get a numeric suffix; a symlinked recording
-  directory (or a trash directory that resolves outside the store) is refused.
-  If the index cleanup fails, the move is rolled back so a failed request
-  leaves no half-applied state. The panel hides the recording from the tree
-  after the move; the trash directory is intentionally not browseable yet.
-- **Keyboard navigation** — in the tree (and the cross-project result list):
-  `↑`/`↓` (plus `Home`/`End`) move focus, `Enter` expands/selects, `F2` renames
-  the focused category/scenario/recording (on 未分组 it opens the create-scenario
-  dialog), `Esc` cancels the editor or leaves the row. Events from the rename
-  input are ignored, so typing never moves focus. Rows have a visible
-  `focus-visible` ring and the tree header shows a short shortcut hint.
-
-`GET /capabilities` tells the client whether the process can replay, trash or
-control a recording. The standalone `panel` command has no driver connection,
-so it reports `replay: false`; its detail shows a disabled 重跑 button with the
-explanation "独立 panel 进程没有回放服务…". A late `PANEL_REPLAY_UNAVAILABLE`
-(e.g. replay disabled by config) also disables the button for the rest of the
-session. The standalone server keeps its read-only rule: it serves
-`/capabilities` and `/active`, answers `/replay` with 503
-`PANEL_REPLAY_UNAVAILABLE`, and answers `/stop`/`/discard` with 503
-`PANEL_CONTROL_UNAVAILABLE`; trash/replay/control exist only on the DSH mount.
-
-### Live recording HUD (P1-1)
-
-The left-sidebar **录制回放** footer entry doubles as a live recording HUD:
-
-- while a recording is active it shows **录制中 mm:ss** with a pulsing red dot;
-  the tooltip carries the title and step count;
-- in the wide footer it also shows two icon buttons: **停止** and **丢弃**.
-  Discard requires a second click within 4 s (it keeps the directory as
-  `cancelled`; it is not a delete);
-- the HUD polls `GET /api/record-replay/active?root=<session workspace>` every
-  second, so it only scans the mounted session's workspace. Without a session
-  root it falls back to all whitelisted projects;
-- stop/discard call `POST /api/record-replay/stop` / `/discard`; the host
-  derives the principal from the recording manifest's `ownerSessionId`, so the
-  panel never invents ownership. A recording owned by another DSH process is
-  reported as `RECORDING_LOCKED` instead of being force-closed.
-
-The standalone entry remains for headless/debug use:
-
-```bash
+pnpm install
+pnpm exec tsc --noEmit
+pnpm exec vitest run          # 全量单测
 pnpm build
-node dist/cli.mjs panel --root /path/to/workspace --port 4174
-# open http://127.0.0.1:4174/panel/
-```
-
-`panel` options:
-
-| Flag | Meaning |
-|---|---|
-| `--root <dir>` | Extra whitelisted project root (repeatable) |
-| `--port <n>` | HTTP port (default `4174`) |
-| `--host <addr>` | Bind address (default `127.0.0.1`) |
-| `--public-dir <dir>` | Built client assets (default `<package>/dist/panel`) |
-| `--cors` | Allow cross-origin reads (for a DSH web UI on another loopback port) |
-
-The project selector combines explicit `--root` directories, DSH workspaces
-read from `~/.dsh/storages/workspace.json` (`DSH_HOME` is honored) and folders
-the user opened through the picker (persisted in
-`~/.dsh/record-replay-panel.json`). The standalone command also offers its
-current directory; the DSH mount disables that candidate, because the host
-process runs from the application/profile directory (`~/.dsh/profiles/desktop`)
-or wherever the app was launched, not from a user project. Only these roots are
-accepted by the API; every root is symlink-resolved and the request id must
-match the Core `rec_`/`run_` grammar before a path is built.
-
-The selector's default rule (first match wins): the root selected last time
-(localStorage), the current DSH session's workspace when it has recordings, the
-standalone current directory, the first project with recordings, then the first
-project. A remembered root is only used when it still exists in the project
-list, is not a DSH/user/system directory (`~/.dsh/**`, the user's home or `/`)
-and has at least one recording directory; otherwise it is ignored for this
-startup but kept in localStorage. `GET /projects` reports a cheap
-`recordingCount` per project so the client never opens on an empty folder just
-because it happens to be first.
-
-The **folder-plus** button next to the selector calls DSH's composed directory
-picker (`ctx.uiWorkspace.pickDirectory()`), registers the chosen folder through
-`POST /root` and remembers it. Empty states distinguish **项目不存在**
-(`PANEL_ROOT_NOT_FOUND`) from **这个项目还没有录制**; the latter also offers
-**切换到有录制的项目**, which expands the projects whose `recordingCount > 0`
-and switches to the selected one without hiding the folder picker.
-
-| Standalone endpoint | DSH endpoint | Response |
-|---|---|---|
-| `GET /panel/projects[?limit=&offset=]` | `GET /api/record-replay/projects[?limit=&offset=]` | `{ projects: [{ root, name, lastOpenedAt?, isCurrent?, recordingCount? }], page: { total, limit, offset, hasMore } }` (default 50, max 200) |
-| `POST /panel/root` | `POST /api/record-replay/root` | `{ root }` → widen the whitelist, remember the folder and return its project summary |
-| `GET /panel/project?root=…[&limit=&offset=]` | `GET /api/record-replay/project?root=…` | categories, scenarios, whole-project stats and one page of recordings (`recordingsTotal`, `recordingsPage`) |
-| `GET /panel/recording?root=…&id=…` | `GET /api/record-replay/recording?root=…&id=…` | recording summary (including `intent`) + runs (status, duration, errorCode, videoPath) |
-| `GET /panel/video?runId=…[&root=…][&download=1]` | `GET /api/record-replay/video?…` | video bytes; `Range`/`HEAD` supported |
-| `GET /panel/search?q=…[&root=…][&limit=]` | `GET /api/record-replay/search?…` | with `root`: recordings/runs in one project; without `root` (or `root=*`): `{ groups: [{ projectRoot, projectName, matches }], total, returned, limit, truncated }` across all projects (default 100, max 500) |
-| `GET /panel/stats` | `GET /api/record-replay/stats` | `{ system: { projects, recordings, runs, failedRuns, cancelledRuns, failureRate, videoFiles, videoBytes, steps }, projects: [{ root, name, stats }] }` |
-| `GET /panel/active[?root=…]` | `GET /api/record-replay/active[?root=…]` | active recordings (`recording` status); with `root` only that project is scanned |
-| `GET /panel/capabilities` | `GET /api/record-replay/capabilities` | `{ replay: boolean, trash: boolean, control?: boolean }` for the current process |
-| `POST /panel/stop` | `POST /api/record-replay/stop` | `{ root, recordingId }` → `{ recordingId, status, endReason? }`; 503 `PANEL_CONTROL_UNAVAILABLE` without a control port |
-| `POST /panel/discard` | `POST /api/record-replay/discard` | `{ root, recordingId }` → `{ recordingId, status: "cancelled", endReason: "cancelled" }`; 503 without a control port |
-| `POST /panel/replay` | `POST /api/record-replay/replay` | `{ root, recordingId, values? }` → `{ runId }`; the Run continues in the background. 503 `PANEL_REPLAY_UNAVAILABLE` without a replay service; 409 `PANEL_REPLAY_FAILED` keeps the upstream code in the message |
-| — (read-only) | `POST /api/record-replay/trash` | `{ root, recordingId }` → `{ recordingId, trashPath, movedAt, indexCleaned }`; moves the directory to `trash/<id>-<stamp>` and removes its index assignment |
-| — (read-only) | `PATCH /api/record-replay/category?root=…` | `{ id, name }` → rename a category |
-| — (read-only) | `PATCH /api/record-replay/scenario?root=…` | `{ id, name }` → rename a scenario |
-| — (read-only) | `POST /api/record-replay/scenario?root=…` | `{ categoryId, name, includeUngrouped? }` → create a scenario; with `includeUngrouped`, collect that category's 未分组 recordings |
-| — (read-only) | `PATCH /api/record-replay/recording?root=…` | `{ id, title?, scenarioId? }` → index-only title override and/or scenario move (`scenarioId: null` = 未分组) |
-
-`.dsh/record-replay/index.json` (version 1: categories/scenarios/assignments)
-is read when valid. When it is missing, corrupt or lacks a site's category, the
-read path rebuilds categories in memory from each recording's first navigate
-URL. An assignment may carry `intent` or `title` alone (no `scenarioId`), which
-is how existing recordings get a use-case description or a display rename
-without rewriting their manifests. A corrupt recording/run is skipped with a
-warning, not allowed to break the rest of the project.
-
-Writes exist only on the DSH mount (same-origin authenticated routes); the
-standalone `panel` command deliberately stays read-only. Only `index.json` is
-written — never a manifest or run file. Each write is a read-modify-write
-serialized by a process-local queue and persisted through a same-directory temp
-file + fsync + rename, so concurrent readers always see a complete JSON
-document. Missing indexes are rebuilt from recording sites before writing;
-partially corrupt v1 indexes keep every readable assignment; unparseable JSON
-returns `PANEL_INDEX_CORRUPT` and writes nothing. Names are trimmed and limited
-to 1–80 characters, ids must match the slug grammar, and unknown ids return
-`PANEL_*_NOT_FOUND`.
-
-The React client uses React 19, Tailwind CSS v4 + shadcn-style Radix primitives,
-TanStack Query (server state), TanStack Virtual (long trees), Zustand (UI state)
-and lucide-react icons. Panel tests:
-
-```bash
-pnpm exec vitest run tests/unit/panel
-```
-
-The DSH client half is a second Vite build (`pnpm build:ds-client`) that wraps
-CJS output in `window.__ModuleLoader__.load` and inlines Tailwind CSS into the
-factory; React is taken from DSH's frozen module table. It registers a
-`sidebarRightTabs` page type plus its `sidebar.right.pane.tab` body and the
-`sidebar.footer.action` entry. Adding or changing client code requires
-refreshing the DSH window; **host-side changes (scanner/intent DTO, panel
-search/stats/pagination routes, panel write routes, the M3 replay/trash routes
-and the plugin's replay bridge) require restarting DSH**,
-because the plugin module graph is cached. See
-[`docs/design/record-replay-panel.md`](docs/design/record-replay-panel.md) §10,
-§11 and §14 for the API research and verification record.
-
-M1.6 covers project selection, the category → scenario (未分组) → recording
-tree, Run list, intent display, lazy video playback with range requests, error
-details, search and stats, mounted in the DSH right sidebar. The project
-selector's default rule and folder picker are covered in
-[`docs/design/record-replay-panel.md`](docs/design/record-replay-panel.md) §13
-and the AX e2e record in
-[`docs/spikes/2026-11-01-panel-ax-e2e/README.md`](docs/spikes/2026-11-01-panel-ax-e2e/README.md).
-M2 adds the “全部项目” mode: cross-project search grouped by project, system
-and per-project statistic cards, and `limit`/`offset` pagination for the
-project and recording lists (infinite queries plus 加载更多; virtual scrolling
-still handles long trees/result lists). See
-[`docs/design/record-replay-panel.md`](docs/design/record-replay-panel.md) §14
-for the scan limits, response shapes and test coverage.
-M3-lite adds
-double-click inline rename for categories/scenarios/recording titles (Enter
-saves, Escape cancels, blur saves), the 未分组 “新建场景并收纳当前 N 条录制”
-dialog, `invalidateQueries` refresh and an error-code toast. M3 adds replay,
-move-to-trash and keyboard navigation (see the paragraph above); the replay
-path was verified end-to-end against a real recording (new `run.json`,
-`steps.jsonl`, 149 KB `video/replay.webm`). Still not covered: drag-and-drop
-categorization, browsing the trash directory, and deep links — the DSH
-right-sidebar mount has no address bar, so a `#root=…&recording=…` hash cannot
-be restored there; the project/recording last-used state already survives via
-localStorage.
-
-## Test suites
-
-`cua_test_run` runs a JSON suite of recordings sequentially and returns a pass/fail report:
-
-```json
-{
-  "name": "desktop-smoke",
-  "target": { "launch": "desktop", "pid": 42, "windowId": 7 },
-  "baseUrl": "http://127.0.0.1:5000",
-  "values": { "step_shared": "x" },
-  "cases": [
-    { "name": "open", "recordingId": "rec_xxx", "values": { "p": "y" } },
-    { "name": "search", "recordingId": "rec_yyy", "baseUrl": "http://127.0.0.1:5001" }
-  ]
-}
-```
-
-- `target` / `baseUrl` / `values` can be set per suite, and overridden per case; case values win over suite values (same key);
-- 明文凭据不要写进 suite：value 支持 `${ENV_VAR}`，从进程环境解析，缺变量直接报错；
-- `target` / `baseUrl` can be overridden at call time (needed for pids and ports that change between runs);
-- each case is an independent replay run; one failure does not stop the rest;
-- `timeoutMs` (positive integer) can be set per suite or per case; a case that exceeds
-  it is cancelled and reported as `RUN_TIMEOUT` (the rest still run), so a hung page
-  cannot block the whole suite;
-- the report lists `status` / `runId` / `errorCode` per case.
-
-## CLI
-
-The package ships a standalone `dsh-record-replay` command for scheduled and CI runs. It does **not** load DSH or the plugin: it connects to the Cua daemon over MCP, uses the same recording store and replay port, and writes the same run/video layout under `.dsh/record-replay`.
-
-```bash
-pnpm build
-node dist/cli.mjs test tests/suites/web-login.json \
-  --launch isolated \
-  --values step_3404b5e3658b4dd68763fd42923dc267=standard_user \
-  --values step_4c6caa140dfd40a3bc97e2bc2af69a49=secret_sauce \
-  --junit /tmp/web-login.xml
-```
-
-After `pnpm link --global` (or `npm install -g dsh-record-and-replay`) the same command is available as `dsh-record-replay` or `dsh-record-and-replay`:
-
-```bash
-dsh-record-replay test tests/suites/web-login.json --launch isolated --junit out/web-login.xml
-```
-
-Options:
-
-| Flag | Meaning |
-|---|---|
-| `--junit <path>` | JUnit XML output path; defaults to `<suite>.junit.xml` next to the suite |
-| `--base-url <url>` | override the suite `baseUrl` (case-level `baseUrl` still wins) |
-| `--launch <mode>` | `isolated`, `existing` or `desktop`; required unless the suite/case already sets a target |
-| `--pid <n>` / `--window-id <n>` | target for `existing` / `desktop`; required when that launch mode is used |
-| `--values <id=value>` | replay input value keyed by `stepId` or `secretRef`; repeatable, wins over suite/case values |
-| `--timeout <ms>` | per-case timeout budget; a timed-out case is cancelled and reported as `RUN_TIMEOUT` (default `120000`; `0` and negative values are rejected) |
-| `-h`, `--help` | usage |
-
-Behaviour:
-
-- suite JSON is parsed by the same parser as `cua_test_run` (`suite`/case `target`, `baseUrl`, `values`);
-- target precedence: case → CLI override → suite; baseUrl precedence: case → CLI override → suite;
-- cases run sequentially; a failure records `FAIL` and the next case still runs;
-- timeout resolves as case `timeoutMs` → this `--timeout` → suite `timeoutMs` → `120000` ms; on expiry the CLI calls `cancelRun(runId)` and records `TIMEOUT` with `errorCode: RUN_TIMEOUT` (a budget failure, distinct from `ASSERTION_FAILED`), then continues with the next case and exits `1`;
-- each line reports `PASS`/`FAIL`/`TIMEOUT`, `runId`, `errorCode`, duration and the error message;
-- video is on by default (WebM) and lands in `runs/<runId>/video/replay.webm` under the recording's run directory;
-- workspace = current directory; recordings and runs stay in `.dsh/record-replay`;
-- the CLI uses the MCP transport only (`cua-driver >= 0.38.0` on `PATH`).
-
-Exit codes:
-
-| Code | Meaning |
-|---|---|
-| `0` | every case reached `completed` |
-| `1` | at least one case failed (assertion, target, unsupported step, timeout, …) |
-| `2` | usage, suite JSON, Cua connection or workspace assembly error |
-
-Examples in the repo:
-
-```bash
-# passing: SauceDemo login recording, credentials supplied as replay values
-node dist/cli.mjs test tests/suites/web-login.json --launch isolated
-
-# intentional failure: the recording asserts example.com, but we replay it on saucedemo.com
-node dist/cli.mjs test tests/suites/web-assert-fail.json --launch isolated --junit /tmp/fail.xml
-```
-
-For a nightly launchd job (including a failure-notification wrapper and Keychain-based credentials), see [`docs/guides/launchd.md`](docs/guides/launchd.md).
-
-## Skill library
-
-Completed recordings plus one successful replay run can be distilled into a reusable Skill (`SKILL.md`). Six host tools cover the lifecycle; write tools require `skill.enabled: true`, read tools stay available either way.
-
-| Tool | Purpose | Key arguments |
-|---|---|---|
-| `cua_skill_generate` | Recording + successful Run → draft in `_drafts/` (never installs) | `recordingId`, optional `site`/`flow`/`mode` (`template` or `model`) |
-| `cua_skill_review` | Read a draft: summary, ambiguities, provenance, pre-install validation | `draftId` |
-| `cua_skill_install` | Install after human confirmation (`decision: "confirmed"`); anything else is zero-write | `draftId`, `decision`, optional `name` |
-| `cua_skill_search` | Search the installed index by site/flow/triggers/free text | `site`, `flow`, `triggers`, `query` |
-| `cua_skill_load` | Load full `SKILL.md` (active or explicit `version`) | `name`, optional `version` |
-| `cua_skill_feedback` | Report one run outcome; `runId` is the idempotency key, failed runs mark `needs_review` | `runId`, `recordingId`, `skillName`, `result` |
-
-Typical flow: `cua_skill_generate` → `cua_skill_review` → human confirms → `cua_skill_install` → later `cua_skill_search`/`cua_skill_load`, and `cua_skill_feedback` after each replay run.
-
-`mode: "model"` asks the host model to enrich **Summary / Preconditions / Ambiguities** only:
-the steps, semantic targets, inputs, verification and provenance stay deterministic.
-The call uses the calling session's current provider/model through DSH's mounted `llm`
-service (it never invents a route or reads credentials), asks for strict JSON, and
-drops the enrichment when the reply is malformed, contains a plaintext secret, or
-fails the pointer/coordinate check; the draft then falls back to the template and
-records why in `ambiguities`. Without a model service or a resolved route the same
-fallback applies. The five reference prompt ids are available in
-`src/skill/drafting.ts` (`describe-activity`, `suggest-next-actions`, `draft-memory`,
-`draft-replay-plan`, `create-replay-skill`). When the model returns a `memory` field, the
-draft directory also gets `memory.md`; `cua_skill_review` returns it as `memory`.
-
-Skill storage:
-
-- Drafts: `.dsh/skill-library/_drafts/<draftId>/`
-  - `SKILL.md` and `draft.json`
-  - `memory.md` when `mode: "model"` produced a compact memory
-- Installed: `.dsh/skill-library/skills/<site>/<flow>/SKILL.md` with immutable copies under `versions/v<N>/`
-- Published for DSH: after install, the same body is copied to `<workspace>/.dsh/skills/<name>/SKILL.md` with a `description` and a "How to run" section, so DSH's own skill catalog can load it (`.dsh/skill-library` stays authoritative)
-
-Secrets never enter a Skill: redacted `setValue` values are kept as parameter names/placeholders, and plaintext secrets, redaction masks, or coordinate-only steps are rejected at generation/install time. Replay input `values` stay process-only — they are never written to the Run, the draft, or the installed Skill.
-
-## Replay input values
-
-Redacted `setValue` steps can be replayed by passing process-only values keyed by `stepId` or `secretRef`:
-
-```json
-{
-  "recordingId": "rec_...",
-  "pid": 12345,
-  "windowId": 678,
-  "values": { "step_...": "Alice" }
-}
-```
-
-Values are used in memory only and are never written to the Run.
-
-## Storage
-
-- Recordings: `.dsh/record-replay/recordings/<recordingId>/`
-  - `manifest.json`, `steps.jsonl`
-  - `suppressed.jsonl` (only when the URL policy suppressed steps)
-  - `assets/`, `runs/`
-- Replay runs: `.dsh/record-replay/recordings/<recordingId>/runs/<runId>/`
-  - `run.json`
-  - `steps.jsonl`
-  - `evidence/`
-
-## Requirements
-
-- DSH `>=0.2.1-rc.5 <0.3.0`
-- Node.js `>=22`
-- `native` transport: `@trycua/cua-driver` `0.28.0` (installed as a dependency; per-platform binaries come from its optional dependencies)
-- `mcp` transport: `cua-driver` `>=0.38.0` on `PATH`, with the daemon already authorized for existing-profile access
-- The DSH app needs macOS Accessibility and Screen Recording grants for either transport
-
-## Current limitations
-
-- The panel is a read-only browser over the same store; host-side writes only touch index.json.
-- Secrets are redacted before persistence; plaintext remains in process memory only.
-- The native runtime lives in a child process, so a Cua crash cannot terminate DSH; the affected binding is invalidated and the next bind can fall back to MCP.
-- Native existing-profile approval is scoped to the in-flight bind: exactly the requested `pid` + `window_id` (60s TTL), every other authorization boundary is denied.
-- MCP daemon start/authorization is an operator prerequisite; the plugin does not auto-start it.
-- A native browser bubble — for example Chrome's password-manager "change your password" warning after a breached credential — floats over the page and swallows trusted CDP mouse input. Cua still answers `clicked (x, y)` while the page receives no pointer events at all. The click verification above recovers by re-dispatching as a synthetic DOM click; a control that rejects untrusted events (some file pickers and security prompts) cannot be driven while such a bubble is open. Options are to dismiss the bubble or to use a profile where the password manager is silent.
-- Click verification compares the semantic snapshot, so a click whose only effect is outside it (canvas, audio, an invisible network request) can be retried once as a synthetic DOM click. Recordings that must not repeat such a click should assert the outcome right after it.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, test
-commands and PR checklist. Public-boundary checks run in CI:
-
-```bash
 pnpm check:boundary
+pnpm test:activity            # Playwright activity-view e2e
 ```
 
-For a public release, also run `pnpm check:history` and follow
-[`docs/guides/public-release.md`](docs/guides/public-release.md); the working
-tree is sanitized but old commits still need a history rewrite.
+CI 在 macOS 上跑 typecheck/单测/build/boundary，在 Ubuntu 上跑 Playwright e2e。
 
-## Security
+## 贡献与许可
 
-Do not report vulnerabilities in public issues. See [SECURITY.md](SECURITY.md)
-for private reporting, the Cua permission model and recording-data guidance.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+- 贡献指南：[CONTRIBUTING.md](CONTRIBUTING.md)
+- 安全策略：[SECURITY.md](SECURITY.md)
+- 许可证：MIT，见 [LICENSE](LICENSE)
