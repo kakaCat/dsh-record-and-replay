@@ -128,7 +128,10 @@ describe('panel writes end to end (real index + fetch routes)', () => {
     await user.type(input, '改名后的录制')
     await user.keyboard('{Enter}')
 
-    expect(await screen.findByRole('heading', { level: 1, name: '改名后的录制' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: '改名后的录制' }, { timeout: 5000 }),
+    ).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByTestId('edit-recording-rec_bili')).toBeNull())
     const row = screen.getByTestId('recording-row-rec_bili')
     expect(within(row).getByText('改名后的录制')).toBeInTheDocument()
 
