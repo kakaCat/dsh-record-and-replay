@@ -1,0 +1,14 @@
+{
+  "name": "web-login",
+  "target": { "launch": "isolated" },
+  "cases": [
+    {
+      "name": "saucedemo-login",
+      "recordingId": "rec_6faac705138e41fc9943c156026c8254",
+      "values": {
+        "step_3404b5e3658b4dd68763fd42923dc267": "standard_user",
+        "step_4c6caa140dfd40a3bc97e2bc2af69a49": "secret_sauce"
+      }
+    }
+  ]
+}

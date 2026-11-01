@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-11-01T05:15:11.640Z",
+  "cuaVersion": "0.38.0",
+  "mcpArgs": [
+    "mcp",
+    "--direct"
+  ],
+  "fixtureUrl": "http://127.0.0.1:63513/",
+  "session": "scroll-live-mvxdlgzw",
+  "launch": "isolated",
+  "binding": {
+    "pid": 5675,
+    "windowId": 19151,
+    "targetId": "bt-63ccf42c-753d-42c6-9747-d32909e4e903",
+    "tabId": "tab-b2930ba1-5962-4706-b4f0-7947030964a9",
+    "generation": 2
+  },
+  "scroll": {
+    "targeted": {
+      "ref": "p1:12",
+      "deltaY": 900,
+      "bottomVisibilityBefore": "offscreen",
+      "bottomVisibilityAfter": "in_viewport"
+    },
+    "noTarget": {
+      "upSteps": 8,
+      "downSteps": 8,
+      "restoreSteps": 8,
+      "bottomVisibilityAtEnd": "in_viewport",
+      "reachedBottom": true
+    }
+  },
+  "key": {
+    "browserKeyTools": [
+      "hotkey",
+      "press_key"
+    ],
+    "driverErrorCode": "ACTION_UNSUPPORTED",
+    "browserTypeKeystrokes": {
+      "typedValue": "Enter",
+      "conclusion": "browser_type keystrokes types literal text; it is not a key-press route"
+    }
+  }
+}

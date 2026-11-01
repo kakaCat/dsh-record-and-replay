@@ -1,0 +1,6 @@
+# dsh-record-replay 的装载层（bundle patch）。
+# DSH Loader 需要 package.json 的 dsh.bundle.patch 指向本文件；
+# 读不到该文件时整个 bundle 会被跳过，工具不会注册。
+- insert:
+    - id: record-replay
+      name: dsh-record-replay

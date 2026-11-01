@@ -1,0 +1,11 @@
+{
+  "name": "web-assert-fail",
+  "target": { "launch": "isolated" },
+  "cases": [
+    {
+      "name": "url-assert-must-fail",
+      "recordingId": "rec_1736469197ad4fda9a7912424c8d1b8d",
+      "baseUrl": "https://www.saucedemo.com"
+    }
+  ]
+}

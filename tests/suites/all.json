@@ -1,0 +1,28 @@
+{
+  "name": "all",
+  "target": {
+    "launch": "isolated"
+  },
+  "cases": [
+    {
+      "name": "web-login",
+      "recordingId": "rec_6faac705138e41fc9943c156026c8254",
+      "values": {
+        "step_3404b5e3658b4dd68763fd42923dc267": "standard_user",
+        "step_4c6caa140dfd40a3bc97e2bc2af69a49": "secret_sauce"
+      }
+    },
+    {
+      "name": "web-cart",
+      "recordingId": "rec_74f37ee8e1b544eba57ed8e8cf28b06d",
+      "values": {
+        "step_45e1c4d1defc4e51b1a2872704c8b853": "standard_user",
+        "step_aeb2ceb61409445f89c0f8f578769f3e": "secret_sauce"
+      }
+    },
+    {
+      "name": "bili-search",
+      "recordingId": "rec_c2dbb8022afc44f79e793cfa58ef00fb"
+    }
+  ]
+}

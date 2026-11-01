@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scroll Fixture</title>
+  <style>
+    body { font: 16px/1.5 -apple-system, "PingFang SC", sans-serif; margin: 0; }
+    section { box-sizing: border-box; height: 900px; padding: 24px; border-bottom: 1px solid #ddd; }
+    input { width: 320px; padding: 8px; font: inherit; }
+    button { padding: 8px 12px; font: inherit; }
+    #bottom { background: #eef8ee; display: flex; flex-direction: column; justify-content: flex-end; }
+  </style>
+</head>
+<body>
+  <section id="top">
+    <h1>Scroll fixture</h1>
+    <label for="name">Name</label>
+    <input id="name" name="name" aria-label="Name" autocomplete="off">
+    <button id="top-action" type="button">Top action</button>
+  </section>
+  <section><h2>Section A</h2></section>
+  <section><h2>Section B</h2></section>
+  <section><h2>Section C</h2></section>
+  <section><h2>Section D</h2></section>
+  <section><h2>Section E</h2></section>
+  <section id="bottom">
+    <h2>Bottom marker</h2>
+    <button id="bottom-action" type="button">Bottom action</button>
+  </section>
+  <script>
+    window.__keys = [];
+    window.addEventListener('keydown', (event) => { window.__keys.push(event.key); });
+  </script>
+</body>
+</html>

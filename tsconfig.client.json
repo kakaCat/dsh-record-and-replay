@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": "src/client",
+    "outDir": "public",
+    "sourceMap": false,
+    "declaration": false
+  },
+  "include": [
+    "src/client/activity-model.ts",
+    "src/client/activity-view.ts",
+    "src/client/index.ts"
+  ]
+}

@@ -1,0 +1,317 @@
+/*
+ * Embedded styles for the DSH global panel.
+ *
+ * The standalone page (`src/client/panel/styles.css`) owns `body` and `#root`.
+ * This file must not: it is injected into the running DSH document. It keeps
+ * panel colors under the `--rr-*` namespace, skips Tailwind's preflight, and
+ * scopes layout roots to `.rr-root` so DSH's own chrome is untouched.
+ */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@source "../panel/**/*.{ts,tsx}";
+@source "./**/*.{ts,tsx}";
+
+/* Follow DSH's theme attribute instead of the OS media query. */
+@custom-variant dark (&:where(body[data-ds-dark-theme] *, body[data-ds-dark-theme] &));
+
+@theme inline {
+  --color-background: var(--rr-background);
+  --color-foreground: var(--rr-foreground);
+  --color-card: var(--rr-card);
+  --color-card-foreground: var(--rr-card-foreground);
+  --color-popover: var(--rr-popover);
+  --color-popover-foreground: var(--rr-popover-foreground);
+  --color-primary: var(--rr-primary);
+  --color-primary-foreground: var(--rr-primary-foreground);
+  --color-secondary: var(--rr-secondary);
+  --color-secondary-foreground: var(--rr-secondary-foreground);
+  --color-muted: var(--rr-muted);
+  --color-muted-foreground: var(--rr-muted-foreground);
+  --color-accent: var(--rr-accent);
+  --color-accent-foreground: var(--rr-accent-foreground);
+  --color-destructive: var(--rr-destructive);
+  --color-destructive-foreground: var(--rr-destructive-foreground);
+  --color-border: var(--rr-border);
+  --color-input: var(--rr-input);
+  --color-ring: var(--rr-ring);
+  --radius-sm: calc(var(--rr-radius) - 4px);
+  --radius-md: calc(var(--rr-radius) - 2px);
+  --radius-lg: var(--rr-radius);
+  --radius-xl: calc(var(--rr-radius) + 4px);
+  --font-sans: var(--rr-font-sans);
+  --font-mono: var(--rr-font-mono);
+}
+
+:root {
+  --rr-radius: 0.75rem;
+  --rr-background: #f5f6f8;
+  --rr-foreground: #171a1f;
+  --rr-card: #ffffff;
+  --rr-card-foreground: #171a1f;
+  --rr-popover: #ffffff;
+  --rr-popover-foreground: #171a1f;
+  --rr-primary: #0f766e;
+  --rr-primary-foreground: #ffffff;
+  --rr-secondary: #eef1f4;
+  --rr-secondary-foreground: #2b3138;
+  --rr-muted: #eef1f4;
+  --rr-muted-foreground: #667085;
+  --rr-accent: #e8f1f2;
+  --rr-accent-foreground: #0f5f59;
+  --rr-destructive: #dc2626;
+  --rr-destructive-foreground: #ffffff;
+  --rr-border: #e2e6eb;
+  --rr-input: #e2e6eb;
+  --rr-ring: #14b8a6;
+  --rr-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --rr-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+body[data-ds-dark-theme] {
+  --rr-background: #0f1216;
+  --rr-foreground: #e6e9ee;
+  --rr-card: #151a20;
+  --rr-card-foreground: #e6e9ee;
+  --rr-popover: #151a20;
+  --rr-popover-foreground: #e6e9ee;
+  --rr-primary: #2dd4bf;
+  --rr-primary-foreground: #042f2c;
+  --rr-secondary: #1d242c;
+  --rr-secondary-foreground: #d7dde6;
+  --rr-muted: #1a2027;
+  --rr-muted-foreground: #98a2b3;
+  --rr-accent: #1b2a2a;
+  --rr-accent-foreground: #99f6e4;
+  --rr-destructive: #f87171;
+  --rr-destructive-foreground: #2b0b0b;
+  --rr-border: #262e37;
+  --rr-input: #262e37;
+  --rr-ring: #2dd4bf;
+}
+
+.rr-root {
+  height: 100%;
+  min-height: 0;
+  color-scheme: light;
+  color: var(--rr-foreground);
+  background: var(--rr-background);
+  font-family: var(--rr-font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body[data-ds-dark-theme] .rr-root {
+  color-scheme: dark;
+}
+
+/*
+ * DSH stylesheet resets target bare `button` / `input` elements globally (the
+ * shell's own chrome), which leaks into components that intentionally leave a
+ * control transparent and rely on a utility class. Put the panel's neutral
+ * reset in the base layer so every Tailwind utility still wins.
+ */
+@layer base {
+  .rr-root :where(button) {
+    appearance: none;
+    background-color: transparent;
+    color: inherit;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    text-align: inherit;
+  }
+
+  .rr-root :where(input, textarea) {
+    color: inherit;
+    font: inherit;
+  }
+}
+
+.rr-root *,
+.rr-root *::before,
+.rr-root *::after {
+  box-sizing: border-box;
+}
+
+.rr-root ::selection {
+  background: color-mix(in srgb, var(--rr-primary) 25%, transparent);
+}
+
+.rr-root,
+.rr-root * {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--rr-muted-foreground) 35%, transparent) transparent;
+}
+
+.rr-root ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.rr-root ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+  background-color: color-mix(in srgb, var(--rr-muted-foreground) 35%, transparent);
+}
+
+.rr-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/*
+ * Left-sidebar entry (the `sidebar.footer.action` seat).
+ *
+ * The entry lives outside `.rr-root`, so it carries its own neutral styling
+ * and follows DSH's own tokens with the panel palette as a fallback.
+ */
+.rr-entry-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+}
+
+.rr-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  padding: 0 10px 0 8px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary, var(--rr-foreground));
+  font-family: var(--rr-font-sans);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.rr-entry:hover {
+  background: var(--dsw-alias-interactive-bg-hover, color-mix(in srgb, currentColor 8%, transparent));
+}
+
+.rr-entry:focus-visible {
+  outline: 2px solid var(--rr-ring);
+  outline-offset: -2px;
+}
+
+.rr-entry--rail {
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.rr-entry__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rr-entry__label--live {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.rr-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.rr-entry-row .rr-entry {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rr-entry-wrap--live .rr-entry {
+  height: 36px;
+}
+
+.rr-entry__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-radius: 999px;
+  background: #e5484d;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #e5484d 18%, transparent);
+  animation: rr-live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes rr-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rr-entry__dot { animation: none; }
+}
+
+.rr-entry__controls {
+  display: flex;
+  flex: none;
+  gap: 2px;
+}
+
+.rr-entry__control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--rr-muted-foreground);
+  cursor: pointer;
+}
+
+.rr-entry__control:hover:not(:disabled) {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  color: var(--rr-foreground);
+}
+
+.rr-entry__control:focus-visible {
+  outline: 2px solid var(--rr-ring);
+  outline-offset: -2px;
+}
+
+.rr-entry__control:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.rr-entry__control--danger {
+  color: #e5484d;
+}
+
+.rr-entry__hint {
+  margin: 0;
+  padding: 0 8px 4px;
+  color: var(--rr-muted-foreground);
+  font-family: var(--rr-font-sans);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* Right-column body: the panel fills the tab and stacks vertically. */
+.rr-root--sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+

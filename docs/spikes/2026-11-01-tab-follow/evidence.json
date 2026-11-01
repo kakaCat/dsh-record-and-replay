@@ -1,0 +1,1183 @@
+{
+  "generatedAt": "2026-10-31T19:04:12.639Z",
+  "cuaVersion": "0.38.0",
+  "fixtureUrl": "http://127.0.0.1:62052/",
+  "session": "dsh-tab-follow-mvwrscpr",
+  "launch": "isolated_new",
+  "prepare": {
+    "status": "ok",
+    "action": "launched_isolated_browser"
+  },
+  "browserPid": 15618,
+  "windowId": 16830,
+  "window": {
+    "app_name": "Google Chrome",
+    "bounds": {
+      "height": 1006,
+      "width": 1200,
+      "x": 22,
+      "y": 52
+    },
+    "current_space_id": 1,
+    "is_on_screen": true,
+    "layer": 0,
+    "on_current_space": true,
+    "pid": 15618,
+    "space_ids": [
+      1
+    ],
+    "title": "about:blank",
+    "window_id": 16830,
+    "z_index": 221
+  },
+  "bind": {
+    "targetId": "bt-c76ec175-e5ff-46d7-98b5-7f2798ae138e",
+    "tabId": "tab-1ed7a39a-59ba-4ee2-9e96-5f99f8a24047",
+    "tabs": [
+      {
+        "active": true,
+        "tab_id": "tab-1ed7a39a-59ba-4ee2-9e96-5f99f8a24047",
+        "title": "about:blank",
+        "url": "about:blank"
+      }
+    ],
+    "bindingQuality": "exact",
+    "route": "native_cdp_window"
+  },
+  "home": {
+    "page": {
+      "title": "tab-follow-home",
+      "url": "http://127.0.0.1:62052/"
+    },
+    "refs": [
+      {
+        "actions": [
+          "click",
+          "pointer"
+        ],
+        "frame": "main",
+        "name": "open",
+        "ref": "p50:0",
+        "role": "link",
+        "states": {
+          "focusable": true
+        },
+        "value": null,
+        "visibility": "in_viewport"
+      }
+    ]
+  },
+  "click": {
+    "ref": "p50:0",
+    "targetId": "bt-c76ec175-e5ff-46d7-98b5-7f2798ae138e",
+    "tabId": "tab-1ed7a39a-59ba-4ee2-9e96-5f99f8a24047",
+    "result": {
+      "delivery": {
+        "mode": "background"
+      },
+      "effect": "unverifiable",
+      "hint": "The action was sent but nothing confirmed it. Read the page again with get_browser_state and check the change before repeating.",
+      "next_call": {
+        "arguments": {
+          "session": "dsh-tab-follow-mvwrscpr",
+          "tab_id": "tab-1ed7a39a-59ba-4ee2-9e96-5f99f8a24047",
+          "target_id": "bt-c76ec175-e5ff-46d7-98b5-7f2798ae138e"
+        },
+        "tool": "get_browser_state"
+      },
+      "route": "trusted_input",
+      "summary": "clicked (26, 137) in tab-1ed7a39a-59ba-4ee2-9e96-5f99f8a24047"
+    },
+    "waitedMs": 663
+  },
+  "polls": [
+    {
+      "at": 1793473454592,
+      "elapsedMs": 728,
+      "status": "ok",
+      "targetId": "bt-8f9567a3-b841-4e1d-a6b7-13e18f3aa439",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-f0efbc24-cf0f-4450-ba66-abc5365b1d34",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-0d602e4f-6255-493b-89a2-0b5ecb45d490",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473454850,
+      "elapsedMs": 986,
+      "status": "ok",
+      "targetId": "bt-e6812fb8-01ff-4229-a29b-73ab5c1d9366",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-b25251f1-7ead-4af9-9f9c-f2618837bc95",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-dcb0baea-fed0-4a5e-b008-28419773c5fc",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473455085,
+      "elapsedMs": 1221,
+      "status": "ok",
+      "targetId": "bt-bd9a5122-0441-4531-a073-52e0903240e5",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-35a86fdd-d6b1-41df-a772-e9b177f53490",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-6b5866bf-3d6f-4fd7-9195-260084e982bd",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473455352,
+      "elapsedMs": 1488,
+      "status": "ok",
+      "targetId": "bt-bb4998ac-6cb8-4ce1-9f3c-549c2621195b",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-a6e3d915-d5a3-412d-9329-ddade6a53c3d",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-b9a5b965-9334-4c23-a49c-18a10d9c14e0",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473455602,
+      "elapsedMs": 1738,
+      "status": "ok",
+      "targetId": "bt-d3a84f60-507d-4f0c-9bfb-31a5d60345db",
+      "tabs": [
+        {
+          "active": true,
+          "tab_id": "tab-2970e773-c7b2-47a0-b0b2-78e6ddabd8c2",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        },
+        {
+          "active": false,
+          "tab_id": "tab-e698bd00-0ff8-4fc1-90d4-1802052e763c",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        }
+      ]
+    },
+    {
+      "at": 1793473455851,
+      "elapsedMs": 1987,
+      "status": "ok",
+      "targetId": "bt-23308a15-2ab5-47f5-8a47-a059362c09a5",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-0452d1c2-10c7-4406-ad27-1a1b356f12d8",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-e174c796-d80e-4e3e-9207-60a482427be5",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473456119,
+      "elapsedMs": 2255,
+      "status": "ok",
+      "targetId": "bt-7b109b41-a220-45b6-9752-8b21d4a887f2",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-b09310dd-e2b8-4a40-8792-7c8dbd42e447",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-5aff55c8-888e-4c70-a676-ef472a8c37b2",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473456350,
+      "elapsedMs": 2486,
+      "status": "ok",
+      "targetId": "bt-9809e723-bd2e-44b2-8817-f2859802fcbd",
+      "tabs": [
+        {
+          "active": true,
+          "tab_id": "tab-85f3806b-5367-4f3d-b453-04b33676fe56",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        },
+        {
+          "active": false,
+          "tab_id": "tab-dd01bf53-3ecb-4f3b-a310-7abc71d411d2",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        }
+      ]
+    },
+    {
+      "at": 1793473456606,
+      "elapsedMs": 2742,
+      "status": "ok",
+      "targetId": "bt-bb97ec08-458e-4f49-8045-aade992fdddc",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-b8f7c068-7e22-49a3-b44d-8795fbdb019b",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-dcde51d9-1ead-4007-b09a-0578f15991ed",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473456851,
+      "elapsedMs": 2987,
+      "status": "ok",
+      "targetId": "bt-6564a261-0f86-4b7b-9c89-28d77341c4e2",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-98959703-1149-4e52-9baf-02e545abe33a",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-7237eeb6-3fe3-4ba8-b26c-2a7e78c6e412",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473457105,
+      "elapsedMs": 3241,
+      "status": "ok",
+      "targetId": "bt-eccdce29-10ec-4617-9fd9-1d92fa156b63",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-db94aaa4-09fb-4b78-af49-9d79088d90db",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-bd1221ff-9de8-476d-995b-779fc0161330",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473457368,
+      "elapsedMs": 3504,
+      "status": "ok",
+      "targetId": "bt-e9d1a9a1-831e-4381-a8f5-7ce781083612",
+      "tabs": [
+        {
+          "active": true,
+          "tab_id": "tab-c1eecc3d-d1eb-4b0b-ad67-c44096ca0e92",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        },
+        {
+          "active": false,
+          "tab_id": "tab-d8228ed7-cd0c-4b37-b58f-3d89f4b43236",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        }
+      ]
+    },
+    {
+      "at": 1793473457635,
+      "elapsedMs": 3771,
+      "status": "ok",
+      "targetId": "bt-7db1e463-94d0-420b-8677-126884ee1034",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-adb76fba-4398-4e19-b64d-dc28d19de38a",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-ab6d5e47-001d-4911-ae0f-6231e19f3922",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    {
+      "at": 1793473457870,
+      "elapsedMs": 4006,
+      "status": "ok",
+      "targetId": "bt-588e83bc-8ca0-487e-902f-d20b0938a333",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-d9c58ae7-9a10-44d8-b2fb-785814d1b919",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-7f6f1a8b-b5f9-41aa-86a1-849dec9ad47d",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    }
+  ],
+  "firstActiveNewTab": {
+    "elapsedMs": 728,
+    "tabId": "tab-0d602e4f-6255-493b-89a2-0b5ecb45d490"
+  },
+  "firstDifferentTarget": {
+    "elapsedMs": 728,
+    "targetId": "bt-8f9567a3-b841-4e1d-a6b7-13e18f3aa439"
+  },
+  "settled": {
+    "targetId": "bt-588e83bc-8ca0-487e-902f-d20b0938a333",
+    "activeTabId": "tab-7f6f1a8b-b5f9-41aa-86a1-849dec9ad47d",
+    "tabs": [
+      {
+        "active": false,
+        "tab_id": "tab-d9c58ae7-9a10-44d8-b2fb-785814d1b919",
+        "title": "tab-follow-home",
+        "url": "http://127.0.0.1:62052/"
+      },
+      {
+        "active": true,
+        "tab_id": "tab-7f6f1a8b-b5f9-41aa-86a1-849dec9ad47d",
+        "title": "tab-follow-second",
+        "url": "http://127.0.0.1:62052/second.html"
+      }
+    ]
+  },
+  "after": {
+    "targetOnly": {
+      "status": "refused",
+      "tabs": null,
+      "page": null
+    },
+    "byPidWindow": {
+      "status": "ok",
+      "targetId": "bt-95d9999b-95b8-4074-978b-713970d1ce2d",
+      "tabs": [
+        {
+          "active": true,
+          "tab_id": "tab-84b83b88-a3e2-4a59-845b-4492196b350e",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        },
+        {
+          "active": false,
+          "tab_id": "tab-77167755-6cc7-45ce-ab5f-aba2309d8a9e",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        }
+      ],
+      "page": null
+    },
+    "newTabViaBoundTarget": {
+      "status": "refused",
+      "page": null,
+      "markerFound": false,
+      "refs": [],
+      "error": null
+    },
+    "oldTabViaBoundTarget": {
+      "status": "ok",
+      "page": {
+        "title": "tab-follow-home",
+        "url": "http://127.0.0.1:62052/"
+      },
+      "markerFound": true,
+      "error": null
+    }
+  },
+  "repeatClick": {
+    "ref": "p52:1",
+    "pair": {
+      "targetId": "bt-bc427880-b63f-4d9c-8263-7611b6575a5e",
+      "tabId": "tab-cfd58e91-baa9-4549-bb30-2422eaf87d90",
+      "tabs": [
+        {
+          "active": false,
+          "tab_id": "tab-517778a5-3abe-40f2-bc44-cff5bcab8170",
+          "title": "tab-follow-home",
+          "url": "http://127.0.0.1:62052/"
+        },
+        {
+          "active": true,
+          "tab_id": "tab-cfd58e91-baa9-4549-bb30-2422eaf87d90",
+          "title": "tab-follow-second",
+          "url": "http://127.0.0.1:62052/second.html"
+        }
+      ]
+    },
+    "polls": [
+      {
+        "elapsedMs": 178,
+        "targetId": "bt-534a19af-e544-4b57-8208-af0063011aa5",
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-e85a573f-eea9-41fc-bcf1-54d56b0ebf92",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-cbeace74-a4b2-454f-af63-7a8a3a95e816",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-2ab08d06-e501-4cfb-ad55-a4331f73a842",
+            "title": "tab-follow-second",
+            "url": "http://127.0.0.1:62052/second.html"
+          }
+        ],
+        "page": null
+      },
+      {
+        "elapsedMs": 425,
+        "targetId": "bt-5b3604ec-9854-4fc9-a0d8-bc52970f9af8",
+        "tabs": [
+          {
+            "active": true,
+            "tab_id": "tab-257f70a7-e555-4f4f-a965-d9ac7e4c8dff",
+            "title": "tab-follow-second",
+            "url": "http://127.0.0.1:62052/second.html"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-ae5e9021-1ffd-4c73-a865-1086b0c26dbd",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-cc3ff2b9-64ad-4d86-ad56-9b21d44ed485",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ],
+        "page": null
+      },
+      {
+        "elapsedMs": 678,
+        "targetId": "bt-3005786b-cd9c-4ce7-8ec8-506a89855742",
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-aec0988e-0b5f-495e-a452-c6c3b59e898c",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-bd942ff6-20de-416d-94be-221e8bec60bb",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-9c01838f-681a-44b9-9687-26f0fcb5d03b",
+            "title": "tab-follow-second",
+            "url": "http://127.0.0.1:62052/second.html"
+          }
+        ],
+        "page": null
+      },
+      {
+        "elapsedMs": 925,
+        "targetId": "bt-fddcb6b1-6a11-4cd5-8a48-6cbc93750a8a",
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-ddeb7a18-2fd5-4701-a2a1-60ed877201e2",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-bb512a08-33aa-4b7e-8ac3-fc0520f7b34f",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-2ff9b4ff-d0b8-4290-b72a-f16a63bc2713",
+            "title": "tab-follow-second",
+            "url": "http://127.0.0.1:62052/second.html"
+          }
+        ],
+        "page": null
+      },
+      {
+        "elapsedMs": 1189,
+        "targetId": "bt-3636629c-7abb-41f6-9357-e534facb2a90",
+        "tabs": [
+          {
+            "active": true,
+            "tab_id": "tab-a6e44ff2-d855-446b-893a-1589d8e1d6d7",
+            "title": "tab-follow-second",
+            "url": "http://127.0.0.1:62052/second.html"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-0e2e868b-8ea2-4e0d-87d5-8120fdec9884",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-6ea2000c-11b0-4632-a0da-01937eedf873",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ],
+        "page": null
+      },
+      {
+        "elapsedMs": 1442,
+        "targetId": "bt-8f8dae27-5240-4a02-87e4-9156909feee2",
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-4bf56140-cb8e-4b6a-810d-28764ec7d144",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-c4cb00fe-14ca-487a-8aa9-ae3f85a05ccd",
+            "title": "tab-follow-second",
+            "url": "http://127.0.0.1:62052/second.html"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-d4f41822-3157-439c-8c26-7abf75ed0fbe",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ],
+        "page": null
+      }
+    ]
+  },
+  "bilibili": {
+    "attempted": true,
+    "home": {
+      "page": {
+        "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+        "url": "https://www.bilibili.com/"
+      }
+    },
+    "hotCandidates": [
+      {
+        "actions": [
+          "click",
+          "pointer"
+        ],
+        "frame": "main",
+        "name": "热门",
+        "ref": "p53:48",
+        "role": "link",
+        "states": {
+          "focusable": true
+        },
+        "value": null,
+        "visibility": "in_viewport"
+      },
+      {
+        "actions": [
+          "click",
+          "pointer"
+        ],
+        "frame": "main",
+        "name": "热门",
+        "ref": "p53:52",
+        "role": "statictext",
+        "states": {},
+        "value": null,
+        "visibility": "in_viewport"
+      }
+    ],
+    "hotRef": "p53:48",
+    "click": {
+      "ref": "p53:48",
+      "result": {
+        "delivery": {
+          "mode": "background"
+        },
+        "effect": "unverifiable",
+        "hint": "The action was sent but nothing confirmed it. Read the page again with get_browser_state and check the change before repeating.",
+        "next_call": {
+          "arguments": {
+            "session": "dsh-tab-follow-mvwrscpr",
+            "tab_id": "tab-3fff2385-1f4e-4f28-9bd8-9d8016539324",
+            "target_id": "bt-7a580ae7-8dd6-4eab-a4c5-8f66e41feb65"
+          },
+          "tool": "get_browser_state"
+        },
+        "route": "trusted_input",
+        "summary": "clicked (136, 205) in tab-3fff2385-1f4e-4f28-9bd8-9d8016539324"
+      }
+    },
+    "polls": [
+      {
+        "elapsedMs": 723,
+        "targetId": "bt-28d42c48-bd0e-4fad-bc53-47b14c763c59",
+        "page": null,
+        "tabs": [
+          {
+            "active": null,
+            "tab_id": "tab-0a1e5ac4-071e-4c3d-933f-239fac1c1ae3",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": null,
+            "tab_id": "tab-e6fb8200-c323-48a1-80bd-3c43dd4a8e45",
+            "title": "bilibili.com/v/popular/all?spm_id_from=333.1007.0.0",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": null,
+            "tab_id": "tab-22b78280-1f20-4159-a0d1-fc8e0eda2c05",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": null,
+            "tab_id": "tab-c3889612-6108-460c-b6ac-b7877c780c8b",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 971,
+        "targetId": "bt-45d9e7a7-6d04-4819-a495-9efe63212425",
+        "page": null,
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-5fb12c8e-0e23-4bd9-b11b-72513fdc6113",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-b5b04232-ba30-4db4-bbff-793472b7a633",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-63efe175-4ec6-4440-9007-dc12f9f047b7",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-14f43c7c-f4a8-4fda-9f7f-3028f0a0e7a5",
+            "title": "bilibili.com/v/popular/all?spm_id_from=333.1007.0.0",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 1231,
+        "targetId": "bt-0b140e5b-50d9-436b-8d3b-1642a00428e9",
+        "page": null,
+        "tabs": [
+          {
+            "active": true,
+            "tab_id": "tab-c1652fa6-e7a1-4b62-87db-3e4db7402e32",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-e4ef010f-21d1-4000-86ba-72a4ea0d0d02",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-2bf82bdb-5d85-421f-9ce4-80a200df9cbf",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-e982bccd-ff88-4a52-91b1-bad43e79a420",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 1478,
+        "targetId": "bt-e5d93d01-d9bc-4eb4-9d52-c232c1521e25",
+        "page": null,
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-8748b112-81f6-4807-b618-d409acd49441",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-f2a682bf-df87-4a92-9749-91931b932b1d",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-285dd9c5-0d00-4ba9-812f-49f2601f5907",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-876f1342-ae6c-4822-9d28-3b4398546b39",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 1722,
+        "targetId": "bt-140c2caf-c233-4139-af70-f5da2e330bb6",
+        "page": null,
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-ca99b9c1-be04-4f5f-9403-b0ea01310ee0",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-2c86eae7-4180-449c-b6e3-03954f3c19fb",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-65288b64-293e-44ec-be45-639508774884",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-9e390d3e-ba70-4f94-ac24-48adb6b77023",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 1971,
+        "targetId": "bt-1b1a9758-d6a2-4eba-ad74-a8079f77632e",
+        "page": null,
+        "tabs": [
+          {
+            "active": true,
+            "tab_id": "tab-99404a99-b4cb-4a1f-8dca-3cd78a12b15d",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-f8c9ef2c-6b4c-4132-81a3-07e6e08745cc",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-312548c0-13d1-436c-b340-91fe2c137a37",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-8e45fab4-70be-4722-b5db-6eefc9314af9",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 2238,
+        "targetId": "bt-e2287bab-0ffd-4daa-b332-853976ca05d0",
+        "page": null,
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-67b04f84-2304-4724-a6c2-15822dd36ce2",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-14161b97-c383-4c7f-b4ed-18a1cc1fe108",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-b9cacc99-e29f-426e-8539-771a3b9c1ee1",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-5cee951e-003c-4905-84f6-fa521264a0a2",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 2493,
+        "targetId": "bt-06cd678c-0ad1-4981-8dc2-1ba4c4698e41",
+        "page": null,
+        "tabs": [
+          {
+            "active": true,
+            "tab_id": "tab-9b289c60-6c46-4121-88f5-f77309f43a35",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-8de07eca-138d-4811-94ab-8b1d6c09eefa",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-663bc965-5f0b-4f98-b3cf-284100a4cf1f",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-7ed9b1ad-4888-41b6-a0e9-2de3f755ae7c",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 2739,
+        "targetId": "bt-d78cfb8d-c39c-4f76-b1e2-260c8a81651d",
+        "page": null,
+        "tabs": [
+          {
+            "active": true,
+            "tab_id": "tab-140899ba-568d-466b-a3ba-02ad43a8d06d",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-1b0dc739-5ea0-46d9-bc4c-990257247bbf",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-2d2b5e41-fd50-4dfc-908c-b15923260455",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-986681f9-06da-474a-b788-64dd37fbcdd4",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 2991,
+        "targetId": "bt-53eeea57-1c71-42e4-a829-8f446ed634cb",
+        "page": null,
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-3783d708-d854-4468-b784-88111d0aef3b",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-908e01fc-b5db-4cd7-b416-1def43123f45",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-31e061dc-f2aa-41f7-a966-5e373ea14e74",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-0857db37-a413-49a9-b61b-ce4e64fed7bc",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 3241,
+        "targetId": "bt-453ec571-fc2d-47c3-b0bf-f688ed078894",
+        "page": null,
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-55359619-d1f3-4f32-9539-0fa8c3c9f5dc",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-76fd4fce-0f25-4620-9ad1-54a7718f8353",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-fa45400c-0044-4808-a838-cb78d3905b59",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-6dc4cf0d-7b06-4283-9e2d-66950c7a9786",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 3489,
+        "targetId": "bt-7f1a5aa7-10ad-4648-b34b-787e771604d9",
+        "page": null,
+        "tabs": [
+          {
+            "active": true,
+            "tab_id": "tab-91550bfc-80a6-4590-9784-d8a86bd74cc2",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-79cee307-699d-4dcc-a8fd-bf946e279bdf",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-b4097c3a-8669-41ff-8ea9-b91fbbbeb055",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-edf2e6c0-1bac-4845-88e8-f0f830f01912",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 3740,
+        "targetId": "bt-58e89bc7-fc12-4b63-bf7f-d77114ed39b0",
+        "page": null,
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-af89ba25-38ab-4ea4-b63f-d141d3023835",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-028518f9-5009-493b-812c-76e2b22b7b8f",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-fd9a344e-9863-4855-a980-0f2dbc4980ff",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-4a5a8ac4-2f5a-452f-97ad-8f0f47dd6327",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          }
+        ]
+      },
+      {
+        "elapsedMs": 3990,
+        "targetId": "bt-8cbbf038-5422-4f30-b8e7-81c2baf89d3f",
+        "page": null,
+        "tabs": [
+          {
+            "active": false,
+            "tab_id": "tab-5d3a1230-40db-42c2-bfef-cc67b0308b06",
+            "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+            "url": "https://www.bilibili.com/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-90fe3889-319a-48f8-bda1-c304dba08bcd",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": false,
+            "tab_id": "tab-6c3cae2c-b4a5-4a22-94db-71f1131371dd",
+            "title": "tab-follow-home",
+            "url": "http://127.0.0.1:62052/"
+          },
+          {
+            "active": true,
+            "tab_id": "tab-73e7b41f-c2d0-44f1-a166-765c80874bcd",
+            "title": "哔哩哔哩热门",
+            "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+          }
+        ]
+      }
+    ],
+    "popularPair": {
+      "targetId": "bt-3aa88055-b840-4b0f-9b4f-2571eb129165",
+      "tabId": "tab-e696466a-5fdb-4949-9904-90e69e49af13"
+    },
+    "popular": {
+      "status": "ok",
+      "page": {
+        "title": "哔哩哔哩热门",
+        "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0"
+      },
+      "hasPopularMarker": true
+    }
+  },
+  "calls": [
+    "health_report",
+    "start_session",
+    "browser_prepare",
+    "list_windows",
+    "list_windows",
+    "get_browser_state",
+    "browser_navigate",
+    "get_browser_state",
+    "browser_click",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "browser_navigate",
+    "get_browser_state",
+    "browser_click",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "browser_navigate",
+    "get_browser_state",
+    "browser_click",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state",
+    "get_browser_state"
+  ]
+}

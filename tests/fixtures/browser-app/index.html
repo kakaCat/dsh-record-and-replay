@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cua Binding Fixture</title>
+  <style>
+    body { font: 16px/1.5 -apple-system, "PingFang SC", sans-serif; margin: 40px; }
+    label, input, button { display: block; margin: 12px 0; font: inherit; }
+    input { width: 320px; padding: 8px; }
+    button { width: 180px; padding: 8px 12px; }
+    #result { margin-top: 20px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Cua browser binding fixture</h1>
+  <label for="name">Name</label>
+  <input id="name" name="name" autocomplete="off">
+  <button id="submit" type="button">Submit</button>
+  <div id="result" role="status" aria-live="polite">Waiting</div>
+  <script>
+    document.getElementById('submit').addEventListener('click', () => {
+      const name = document.getElementById('name').value.trim();
+      document.getElementById('result').textContent = name ? 'Submitted: ' + name : 'Name is required';
+    });
+  </script>
+</body>
+</html>

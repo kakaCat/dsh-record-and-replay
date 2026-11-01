@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+.dsh/
+.dsh-data/
+tmp/
+*.log
+.DS_Store
+.pnpm-store/

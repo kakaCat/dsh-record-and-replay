@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-10-31T19:07:12.029Z",
+  "fixtureUrl": "http://127.0.0.1:63276/",
+  "driver": "CuaBrowserDriver",
+  "bind": {
+    "pid": 22287,
+    "windowId": 16977,
+    "targetId": "bt-b642918f-8589-489f-b7cd-ad784fb33b15",
+    "tabId": "tab-8f5b28f1-9bac-438b-9f6c-5979a62ba512"
+  },
+  "fixture": {
+    "home": "http://127.0.0.1:63276/",
+    "click": {
+      "status": "ok",
+      "summary": "followed active tab in the same window"
+    }
+  },
+  "fixtureSecond": {
+    "url": "http://127.0.0.1:63276/second.html",
+    "title": "tab-follow-second",
+    "text": "Second Action\n"
+  },
+  "fixtureSecondAction": "clicked",
+  "bilibiliHome": {
+    "url": "https://www.bilibili.com/",
+    "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili"
+  },
+  "bilibiliClick": {
+    "status": "ok",
+    "summary": "followed active tab in the same window"
+  },
+  "bilibiliPopular": {
+    "url": "https://www.bilibili.com/v/popular/all?spm_id_from=333.1007.0.0",
+    "title": "哔哩哔哩热门"
+  }
+}

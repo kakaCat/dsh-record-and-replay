@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "127-0-0-1",
+      "name": "127.0.0.1",
+      "site": "127.0.0.1"
+    },
+    {
+      "id": "bilibili",
+      "name": "B站",
+      "site": "bilibili"
+    },
+    {
+      "id": "desktop",
+      "name": "desktop",
+      "site": "desktop"
+    },
+    {
+      "id": "example",
+      "name": "example",
+      "site": "example"
+    },
+    {
+      "id": "saucedemo",
+      "name": "SauceDemo",
+      "site": "saucedemo"
+    },
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "site": "wikipedia"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "scn_89bb1ad974",
+      "categoryId": "bilibili",
+      "name": "明日方舟周年庆"
+    }
+  ],
+  "assignments": {
+    "rec_077afdc8337f4e18a1e942b32b728d86": {
+      "scenarioId": "scn_89bb1ad974"
+    },
+    "rec_5f1e07e6180949d486a7cd48a6e59fbf": {
+      "scenarioId": "scn_89bb1ad974",
+      "intent": "回归录制：从 B 站首页输入关键词并触发搜索，校验结果页标题包含关键词。"
+    },
+    "rec_6faac705138e41fc9943c156026c8254": {
+      "intent": "用 SauceDemo 的 standard_user 登录，进入商品列表并确认至少 6 个商品可见；用于验收登录链路的回放稳定性。"
+    },
+    "rec_7e21c547938347c4975a995ca6e56029": {
+      "scenarioId": "scn_89bb1ad974"
+    },
+    "rec_8318c5fbc9444e228387c96ad0185c4e": {
+      "scenarioId": "scn_89bb1ad974"
+    },
+    "rec_84a72fed45924725bf206f533aea5dc5": {
+      "scenarioId": "scn_89bb1ad974"
+    },
+    "rec_a1cedc5b51194b9cbb0b198e8fbee403": {
+      "scenarioId": "scn_89bb1ad974"
+    },
+    "rec_c086f46062664e718b05a610e17b488e": {
+      "scenarioId": "scn_89bb1ad974"
+    },
+    "rec_c2dbb8022afc44f79e793cfa58ef00fb": {
+      "scenarioId": "scn_89bb1ad974",
+      "intent": "用户在 B 站搜索「明日方舟周年庆」，确认搜索结果页出现活动入口与相关视频卡片；回放需复现输入关键词、提交搜索、校验结果三条关键步骤。"
+    },
+    "rec_d753a850975449848d96cc8a645248cf": {
+      "scenarioId": "scn_89bb1ad974"
+    }
+  }
+}
