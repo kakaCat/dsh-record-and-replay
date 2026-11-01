@@ -319,7 +319,7 @@ scope: dsh-record-and-replay vs ../open-codex-record-and-replay
 - `docs/projects/PRJ-0001/design/cua-record-replay-technical-implementation.md:14`：“当前仓库尚未实现这些模块。” —— 已实现。
 - `docs/knowledge/code-map.md`：生成物为空（0 个符号），应重新生成或删除。
 
-**命名不一致**：目录 `dsh-record-and-replay`、包名 `dsh-record-replay`、存储目录 `.dsh/record-replay`、需求文档里的 `.dsh/record-and-replay`。公开前统一一次。
+**命名**：公开仓库与 npm 包均为 `dsh-record-and-replay`；插件 id 与 CLI 命令保留 `dsh-record-replay`（CLI 另有 `dsh-record-and-replay` 别名），存储目录仍是 `.dsh/record-replay`。
 
 ---
 

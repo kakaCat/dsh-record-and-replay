@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.3 — 2026-11-01
+
+### Changed
+
+- npm package renamed to `dsh-record-and-replay` because `dsh-record-replay` is owned by
+  another project. The DSH plugin id and the `dsh-record-replay` CLI name are unchanged;
+  the CLI now also answers to `dsh-record-and-replay`.
+
 ## 0.0.2 — 2026-11-01
 
 ### Added

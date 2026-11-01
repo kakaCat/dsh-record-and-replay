@@ -1,6 +1,6 @@
 {
-  "name": "dsh-record-replay",
-  "version": "0.0.2",
+  "name": "dsh-record-and-replay",
+  "version": "0.0.3",
   "type": "module",
   "description": "Cua Driver-only browser record/replay for DSH (host plugin)",
   "author": "kakaCat",
@@ -26,7 +26,8 @@
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "bin": {
-    "dsh-record-replay": "./dist/cli.mjs"
+    "dsh-record-replay": "./dist/cli.mjs",
+    "dsh-record-and-replay": "./dist/cli.mjs"
   },
   "exports": {
     "./package.json": "./package.json",

@@ -5,6 +5,8 @@
 
 DSH host plugin for Cua Driver-only browser recording and replay.
 
+> npm package: `dsh-record-and-replay` (the plugin id and CLI stay `dsh-record-replay`; the CLI also answers to `dsh-record-and-replay`).
+
 ## Install
 
 ```bash
@@ -528,7 +530,7 @@ node dist/cli.mjs test tests/suites/web-login.json \
   --junit /tmp/web-login.xml
 ```
 
-After `pnpm link --global` (or installing the package) the same command is available as `dsh-record-replay`:
+After `pnpm link --global` (or `npm install -g dsh-record-and-replay`) the same command is available as `dsh-record-replay` or `dsh-record-and-replay`:
 
 ```bash
 dsh-record-replay test tests/suites/web-login.json --launch isolated --junit out/web-login.xml
