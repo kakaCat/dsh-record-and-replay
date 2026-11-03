@@ -7,8 +7,9 @@
  *   暴露给 Agent；`start_session` / `browser_click` 之类的内部工具即使被写进 `tools.allow`
  *   也拒绝（CONFIG_INVALID）；
  * - 参数一律严格校验：未知键 `INVALID_ARGUMENT`，身份键 `FORBIDDEN`（Principal 只能来自 exec）；
- * - 开关默认关闭：关闭时工具仍注册，但处理器统一返回 `FEATURE_DISABLED`——运行期关闭也能稳定拒绝，
- *   组合根可用 runtime.executionEnabled 决定是否对外宣告执行类工具；
+ * - 开关默认关闭：工具工厂本身不裁剪，处理器统一返回 `FEATURE_DISABLED`——直接装配本模块
+ *   也拿不到半开放的工具；组合根可以按同一批开关决定是否注册（插件就对
+ *   `cua_record_start` / `cua_record_action` / `cua_replay_start` / Skill 写族这样做）；
  * - Skill 工具（design/interfaces.md IF-7）只做参数校验、开关检查与公开 DTO 投影，业务逻辑在
  *   `skill/` 应用服务；业务错误码（`SKILL_*` / `RECORDING_INCOMPLETE`）原样透传，不包装成 Host 错误；
  * - 处理结果只返回公开 DTO（JSON 安全），不含 Driver/Cua 句柄，也不含本机绝对路径

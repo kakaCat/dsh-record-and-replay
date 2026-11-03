@@ -38,6 +38,11 @@
     },
     "./client": {
       "default": "./dist/client/client.js"
+    },
+    "./desktop": {
+      "types": "./dist/desktop.d.mts",
+      "import": "./dist/desktop.mjs",
+      "default": "./dist/desktop.mjs"
     }
   },
   "files": [

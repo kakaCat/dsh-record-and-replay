@@ -14,7 +14,7 @@ interface RegisteredRoute {
   readonly path: string
 }
 
-function applyWithFakeContext(): { tools: RegisteredTool[]; routes: RegisteredRoute[] } {
+function applyWithFakeContext(config: Record<string, unknown> = {}): { tools: RegisteredTool[]; routes: RegisteredRoute[] } {
   const tools: RegisteredTool[] = []
   const routes: RegisteredRoute[] = []
   const ctx = {
@@ -57,16 +57,61 @@ function applyWithFakeContext(): { tools: RegisteredTool[]; routes: RegisteredRo
       run()
     },
   }
-  apply(ctx, {})
+  apply(ctx, config)
   return { tools, routes }
 }
 
 describe('plugin apply registry', () => {
-  it('registers 28 uniquely named tools with a fake context', () => {
+  it('registers 19 uniquely named tools by default', () => {
     const { tools } = applyWithFakeContext()
-    expect(tools).toHaveLength(28)
+    expect(tools).toHaveLength(19)
     const names = tools.map(tool => tool.name)
     expect(new Set(names).size).toBe(names.length)
+  })
+
+  it('leaves suite regression off the model surface', () => {
+    const { tools } = applyWithFakeContext()
+    expect(tools.map(tool => tool.name)).not.toContain('cua_test_run')
+  })
+
+  it('keeps the desktop tool family out of the main line entirely', () => {
+    // 桌面工具由独立插件行 record-replay-desktop 注册（cordis.patch.yml 缺省关闭），
+    // 主线任何配置下都不该出现 cua_desktop_*。
+    const { tools } = applyWithFakeContext()
+    const names = tools.map(tool => tool.name)
+    expect(names.some(name => name.startsWith('cua_desktop_'))).toBe(false)
+  })
+
+  it('skips tools that can only answer FEATURE_DISABLED', () => {
+    const recordingOff = applyWithFakeContext({ recording: { enabled: false } }).tools.map(tool => tool.name)
+    expect(recordingOff).toHaveLength(15)
+    expect(recordingOff).not.toContain('cua_record_start')
+    expect(recordingOff).not.toContain('cua_record_bind_browser')
+    expect(recordingOff).not.toContain('cua_record_observe')
+    expect(recordingOff).not.toContain('cua_record_action')
+    // 收尾与只读工具在开关关闭后仍然可用。
+    expect(recordingOff).toEqual(expect.arrayContaining([
+      'cua_record_stop',
+      'cua_record_discard',
+      'cua_record_export',
+      'cua_record_query',
+    ]))
+
+    const replayOff = applyWithFakeContext({ replay: { enabled: false } }).tools.map(tool => tool.name)
+    expect(replayOff).toHaveLength(18)
+    expect(replayOff).not.toContain('cua_replay_start')
+    expect(replayOff).toContain('cua_replay_cancel')
+
+    const skillOff = applyWithFakeContext({ skill: { enabled: false } }).tools.map(tool => tool.name)
+    expect(skillOff).toHaveLength(16)
+    expect(skillOff).not.toContain('cua_skill_generate')
+    expect(skillOff).not.toContain('cua_skill_install')
+    expect(skillOff).not.toContain('cua_skill_feedback')
+    expect(skillOff).toEqual(expect.arrayContaining([
+      'cua_skill_review',
+      'cua_skill_search',
+      'cua_skill_load',
+    ]))
   })
 
   it('declares the optional intent on cua_record_start', () => {
@@ -120,7 +165,7 @@ describe('plugin apply registry', () => {
 
   it('registers the panel read and M3-lite write routes without adding tools', () => {
     const { tools, routes } = applyWithFakeContext()
-    expect(tools).toHaveLength(28)
+    expect(tools).toHaveLength(19)
     expect(routes.map(route => route.path)).toEqual([
       '/api/record-replay/projects',
       '/api/record-replay/project',

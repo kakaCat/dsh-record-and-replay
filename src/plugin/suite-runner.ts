@@ -1,5 +1,6 @@
 /**
- * 套件执行器：CLI 与 `cua_test_run` 共用同一份顺序回放 / 超时 / 重试逻辑。
+ * 套件执行器：`dsh-record-replay test` 用它完成顺序回放 / 超时 / 重试；
+ * 不在模型工具面上（套件回归是 CLI/CI 路径）。
  *
  * 超时不是断言失败：定时器到点后用 `cancelRun(runId)` 中止该 Run，报告记
  * `errorCode: 'RUN_TIMEOUT'` + `timedOut: true`，然后继续下一条 case。

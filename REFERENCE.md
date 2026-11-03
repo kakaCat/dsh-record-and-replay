@@ -33,10 +33,14 @@ The package declares `dsh.bundle.patch`; the profile loader inserts the host plu
     replay:
       enabled: true        # default true
     skill:
-      enabled: true        # default true; set false to make write tools (generate/install/feedback) return FEATURE_DISABLED
+      enabled: true        # default true; set false to unregister the write tools (generate/install/feedback) entirely — reads stay
       rootDir: .dsh/skill-library
       autoFeedback: true   # replay terminal states automatically feed skill counters (idempotent by runId)
+    tools:
+      allow: []            # default []; non-empty = expose only these host tools
 ```
+
+Feature switches also trim the model tool surface: when a switch is off, tools that could only answer `FEATURE_DISABLED` are not registered at all. `recording: false` drops `cua_record_start` / `cua_record_bind_browser` / `cua_record_observe` / `cua_record_action`; `replay: false` drops `cua_replay_start`; `skill: false` drops `cua_skill_generate` / `cua_skill_install` / `cua_skill_feedback`. Finishing (`stop` / `discard` / `export`), cancel/release and read tools stay available, and `cua_record_replay_status` reports the skipped names under `disabledTools`.
 
 ## Transports
 
@@ -224,7 +228,7 @@ Cua 0.38 may refuse `existing` attachment with `background_unavailable` (the bro
 
 ## Desktop (macOS AX)
 
-Cua can drive whole windows, not only browsers. The plugin exposes a small desktop tool set (registered when `tools.allow` is empty):
+Cua can drive whole windows, not only browsers. The desktop tool set ships as a **separate bundle line** — `record-replay-desktop` (`dsh-record-replay/desktop`), inserted by the same `cordis.patch.yml` and **disabled by default**, because these names are a second action vocabulary next to `cua_record_action`. Enable it on the DSH plugin page (one toggle per line, like `dsh-window`); while the line is off, its `apply` never runs and the 8 tools below are completely absent from the model surface. The desktop line shares the main line's workspace runtimes and Cua transport; it carries no config of its own.
 
 - `cua_desktop_state` — snapshot one window: AX role/label/value/enabled (read-only);
 - `cua_desktop_click` — click one element, re-snapshotting first and targeting by role/label;
@@ -493,7 +497,7 @@ localStorage.
 
 ## Test suites
 
-`cua_test_run` runs a JSON suite of recordings sequentially and returns a pass/fail report:
+`dsh-record-replay test <suite.json>` runs a JSON suite of recordings sequentially and reports a pass/fail line per case. Suite regression is a CLI/CI path only — there is no model-facing tool for it (see [CLI](#cli)):
 
 ```json
 {
@@ -510,7 +514,7 @@ localStorage.
 
 - `target` / `baseUrl` / `values` can be set per suite, and overridden per case; case values win over suite values (same key);
 - 明文凭据不要写进 suite：value 支持 `${ENV_VAR}`，从进程环境解析，缺变量直接报错；
-- `target` / `baseUrl` can be overridden at call time (needed for pids and ports that change between runs);
+- `target` / `baseUrl` can be overridden per run with `--launch` / `--pid` / `--window-id` / `--base-url` (needed for pids and ports that change between runs);
 - each case is an independent replay run; one failure does not stop the rest;
 - `timeoutMs` (positive integer) can be set per suite or per case; a case that exceeds
   it is cancelled and reported as `RUN_TIMEOUT` (the rest still run), so a hung page
@@ -550,7 +554,7 @@ Options:
 
 Behaviour:
 
-- suite JSON is parsed by the same parser as `cua_test_run` (`suite`/case `target`, `baseUrl`, `values`);
+- suite JSON is parsed with strict shape checks (`suite`/case `target`, `baseUrl`, `values`);
 - target precedence: case → CLI override → suite; baseUrl precedence: case → CLI override → suite;
 - cases run sequentially; a failure records `FAIL` and the next case still runs;
 - timeout resolves as case `timeoutMs` → this `--timeout` → suite `timeoutMs` → `120000` ms; on expiry the CLI calls `cancelRun(runId)` and records `TIMEOUT` with `errorCode: RUN_TIMEOUT` (a budget failure, distinct from `ASSERTION_FAILED`), then continues with the next case and exits `1`;

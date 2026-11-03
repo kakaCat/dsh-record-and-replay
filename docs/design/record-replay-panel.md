@@ -323,6 +323,10 @@ DSH 浏览器客户端
   `tests/unit/host/tools.test.ts`（`cua_record_query` 返回 intent）；
 - 工具面不变：apply 仍注册 26 个工具、0 重名；`cua_record_start` 只新增一个可选参数
   `intent`，CLI/套件参数不受影响。
+  （后续变更 2026-11-03：桌面工具集拆为独立插件行 `record-replay-desktop`，
+  bundle patch 缺省关闭、插件页逐行开关（dsh-window 同款）；默认工具面 19 个，
+  开启桌面行后 27 个；`cua_test_run` 同时撤出模型面，套件回归只走 CLI。
+  见 `CHANGELOG.md`。）
 
 ## 12. M3-lite：双击重命名 + 未分组收纳（2026-11-01）
 

@@ -1,6 +1,17 @@
 # dsh-record-replay 的装载层（bundle patch）。
 # DSH Loader 需要 package.json 的 dsh.bundle.patch 指向本文件；
 # 读不到该文件时整个 bundle 会被跳过，工具不会注册。
+#
+# 「一个 bundle 两行、插件页每行一个开关」（与 dsh-window 同款）：
+#   行 record-replay          主线：录制 / 回放 / Skill 19 个工具 + 面板 + 斜杠命令
+#   行 record-replay-desktop  桌面行：8 个 cua_desktop_* 工具（macOS AX），缺省关闭
+#
+# 桌面行是平行于浏览器动作的第二套词表，大多数工作区用不到，关掉时它的 apply
+# 不跑、工具完全不注册。要用时在插件页把 record-replay-desktop 的开关打开
+# （或把下面的 disabled 改成 false）。
 - insert:
     - id: record-replay
       name: dsh-record-replay
+    - id: record-replay-desktop
+      name: dsh-record-replay/desktop
+      disabled: true

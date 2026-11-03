@@ -42,7 +42,7 @@ DSH 插件：把 Agent 通过 Cua Driver 执行的浏览器/桌面操作录成�
 - **Skill 知识库**：`cua_skill_generate` → `cua_skill_review` → 人工确认安装 → `cua_skill_search` / `cua_skill_load`；`mode: "model"` 可用当前会话模型增强 Summary/Preconditions/Ambiguities，并生成 `memory.md`，失败自动回落模板。
 - **会话导出**：`cua_record_export` 输出 `session.json`、`events.jsonl`（`session.started` / `agent.action` / `session.ended`）和可选 `suppressed.jsonl`。
 - **隐私与同意**：`setValue` 全掩码；URL 拒绝列表、私密窗口拦截、独立的 `suppressed.jsonl`；录制同意元数据与可选 `explicit` 门。
-- **可回归**：`cua_test_run` / `dsh-record-replay test` 支持套件、JUnit、超时、失败继续；CI 覆盖 typecheck、单测、build、`check:boundary` 和 Playwright e2e。
+- **可回归**：`dsh-record-replay test` 跑套件（JUnit、超时、失败继续，仅 CLI/CI，不占 Agent 工具面）；CI 覆盖 typecheck、单测、build、`check:boundary` 和 Playwright e2e。
 
 ## 工作方式
 
@@ -154,7 +154,7 @@ cua_record_export { "recordingId": "rec_..." }
 
 ## 已知限制
 
-- 浏览器绑定不支持 `key`；需要按键时用桌面绑定 + `cua_desktop_press_key`。
+- 浏览器绑定不支持 `key`；需要按键时用桌面绑定 + `cua_desktop_press_key`（桌面工具在独立插件行 `record-replay-desktop`，缺省关闭，插件页一键开启）。
 - 不做人类桌面采集；只记录 Agent 的 Cua 工具调用。
 - URL 策略只检查动作里出现的 URL；无私密窗口标题时无法识别。
 - 独立 `panel` 进程没有回放/控制服务，重跑和 Stop/Discard 只在 DSH 挂载下可用。

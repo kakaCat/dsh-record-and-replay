@@ -6,7 +6,7 @@
 
 - 运行基线：macOS、Node 22、Cua Driver 0.38.0、Chrome/Edge；默认持久 MCP 连接，`native` 为 opt-in。
 - 核心模块：`src/core`、`src/cua`（client / mcp / worker / native-host / profile-hygiene / daemon-recovery）、`src/driver`、`src/host`、`src/plugin`（tools + slash commands）、`src/recording`、`src/skill`、`src/store`、`src/replay`、`src/client`、`src/testing`。
-- 契约单一来源：`src/core/contracts.ts` 定义 `LAUNCH_MODES`、`ACTION_SPECS`、`TARGET_FIELD_SCHEMAS`、`WINDOW_TARGET_FIELD_SCHEMAS`；bind/replay/`cua_test_run` 的 JSON Schema、handler 白名单校验、driver 能力表都由这些常量派生。新增 launch 模式、动作 kind 或目标字段时只改这里，schema/校验/能力表自动跟随。
+- 契约单一来源：`src/core/contracts.ts` 定义 `LAUNCH_MODES`、`ACTION_SPECS`、`TARGET_FIELD_SCHEMAS`、`WINDOW_TARGET_FIELD_SCHEMAS`；bind/replay/套件 的 JSON Schema、handler 白名单校验、driver 能力表都由这些常量派生。新增 launch 模式、动作 kind 或目标字段时只改这里，schema/校验/能力表自动跟随。
 - 存储布局：`.dsh/record-replay/recordings/<recordingId>/{manifest.json,steps.jsonl,runs/<runId>/}`；Skill 在 `.dsh/skill-library/`。
 - 回放边界：只执行 completed Recording 且只重放成功步骤；`TARGET_NOT_FOUND` 有 5 秒 settle；来源 sha256 不变；写动作发送后不自动重试。
 - 定位：`target.index` 按可见匹配计数，优先 `in_viewport`（Cua refs 带 `visibility`），全部 offscreen 才回退；驱动不自动滚动。

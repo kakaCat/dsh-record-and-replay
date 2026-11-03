@@ -11,7 +11,7 @@
  * - `LAUNCH_MODES`            -> `LaunchMode`, bind/replay schemas, handlers, suite parser;
  * - `ACTION_SPECS`/`ACTION_KINDS` -> action schema, strict key validation, capability tables;
  * - `TARGET_FIELD_SCHEMAS`    -> locator schema and key validation;
- * - `WINDOW_TARGET_FIELD_SCHEMAS` -> bind/replay/suite/`cua_test_run` target properties.
+ * - `WINDOW_TARGET_FIELD_SCHEMAS` -> bind/replay/suite target properties.
  *
  * This module is pure data + pure functions (no Node/Electron/Cua imports), so
  * `core` stays the dependency-free contract layer.
@@ -130,8 +130,8 @@ export type CuaLocatorField = (typeof CUA_LOCATOR_FIELDS)[number];
 
 /**
  * Shared by `cua_record_bind_browser`, `cua_replay_start`, test-suite targets
- * and `cua_test_run`'s `target` override. Keeping one property map means a new
- * field appears in every surface at once.
+ * and the CLI `--launch/--pid/--window-id` override. Keeping one property map
+ * means a new field appears in every surface at once.
  */
 export const WINDOW_TARGET_FIELD_SCHEMAS = {
   launch: launchModeSchema(

@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- The eight `cua_desktop_*` tools moved out of the main plugin into their own
+  bundle line `record-replay-desktop` (`dsh-record-replay/desktop`), inserted by
+  the same `cordis.patch.yml` and **disabled by default** — one bundle, two lines,
+  one toggle per line on the DSH plugin page (same pattern as `dsh-window`). While
+  the line is off, its `apply` never runs and the tools are absent from the model
+  surface entirely; both lines share the same workspace runtimes and Cua transport
+  through `plugin/shared.ts`. The default model-facing surface drops from 28 to 19
+  tools; enable the line to reach 27.
+- Tools that could only answer `FEATURE_DISABLED` are no longer registered when their
+  switch is off: `recording.enabled: false` drops `cua_record_start` /
+  `cua_record_bind_browser` / `cua_record_observe` / `cua_record_action` (finishing and
+  read tools stay), `replay.enabled: false` drops `cua_replay_start` (cancel stays), and
+  `skill.enabled: false` drops the write tools `cua_skill_generate` /
+  `cua_skill_install` / `cua_skill_feedback` (review/search/load stay). Handlers inside
+  the host tool factory still answer `FEATURE_DISABLED` for direct embedders, and
+  `cua_record_replay_status` lists the skipped names under `disabledTools`.
+
+### Removed
+
+- `cua_test_run` is gone from the model tool surface. Suite regression is a CLI/CI
+  path (`dsh-record-replay test`, same parser, runner, JUnit output and flags), and
+  the tool only cost context the model rarely used. Calls that used `cua_test_run`
+  should run the CLI instead.
+
 ## 0.0.3 — 2026-11-01
 
 ### Changed
