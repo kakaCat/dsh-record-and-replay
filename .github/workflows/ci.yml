@@ -23,6 +23,23 @@ jobs:
       - run: pnpm exec vitest run
       - run: pnpm build
 
+  windows-web:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm exec vitest run tests/unit/cua/screen-recorder.test.ts tests/unit/cua/daemon-recovery.test.ts tests/unit/cua/browser-platform.test.ts tests/unit/plugin/desktop-entry.test.ts
+      - run: pnpm build
+
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15

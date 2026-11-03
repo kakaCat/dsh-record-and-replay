@@ -27,8 +27,12 @@ import {
 
 export const name = 'dsh-record-replay/desktop'
 
-export function apply(ctx: unknown): void {
+export function apply(ctx: unknown, platform: NodeJS.Platform = process.platform): void {
   const logger = (ctx as { logger?: (name: string) => PluginLogger }).logger?.(name) ?? console
+  if (platform !== 'darwin') {
+    logger.warn('dsh-record-replay/desktop: desktop automation is only available on macOS; tools not registered')
+    return
+  }
   const disposers: Array<() => void> = []
   ;(ctx as { inject?: (services: string[], cb: (toolsCtx: any) => void) => void }).inject?.(
     ['tools'],

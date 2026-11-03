@@ -264,8 +264,9 @@ runs/<runId>/video/replay.webm
 ```
 
 - enabled by default; set `{ "replay": { "video": false } }` to turn it off;
-- `DSH_REPLAY_VIDEO_INPUT` overrides the avfoundation input (default `0:none` = first screen, no audio);
+- `DSH_REPLAY_VIDEO_INPUT` overrides the capture input (macOS `avfoundation` default `0:none` = first screen, no audio; Windows `gdigrab` default `desktop`);
 - capture is whole-screen, so other windows may appear; macOS needs Screen Recording permission;
+- stopping writes ffmpeg's `q` command to stdin so the container finalizes without relying on POSIX signals;
 - if ffmpeg cannot start, the replay still succeeds and simply has no video.
 
 ## Video usage
@@ -650,9 +651,11 @@ Values are used in memory only and are never written to the Run.
 
 - DSH `>=0.2.1-rc.5 <0.3.0`
 - Node.js `>=22`
+- Web recording/replay: macOS or Windows
+- Desktop automation: macOS only (`launch: "desktop"` and `record-replay-desktop` remain disabled on other platforms)
 - `native` transport: `@trycua/cua-driver` `0.28.0` (installed as a dependency; per-platform binaries come from its optional dependencies)
 - `mcp` transport: `cua-driver` `>=0.38.0` on `PATH`, with the daemon already authorized for existing-profile access
-- The DSH app needs macOS Accessibility and Screen Recording grants for either transport
+- The macOS DSH app needs Accessibility and Screen Recording grants; Windows replay video additionally needs ffmpeg, and degrades to no-video when ffmpeg is unavailable
 
 ## Current limitations
 

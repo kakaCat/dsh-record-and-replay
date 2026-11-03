@@ -13,6 +13,7 @@
  */
 import * as path from 'node:path'
 import { appendFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 
 import type { BrowserDriver } from '../driver/api.js'
 import {
@@ -565,7 +566,7 @@ export function renderJson(_args: unknown, value: unknown) {
 
 export function debugLog(message: string): void {
   try {
-    const dir = path.join(process.env['HOME'] ?? '/tmp', '.dsh')
+    const dir = path.join(homedir(), '.dsh')
     appendFileSync(path.join(dir, 'record-replay-apply.log'), `${new Date().toISOString()} ${message}\n`)
   } catch {
     // 诊断写入失败不影响插件加载。

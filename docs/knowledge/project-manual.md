@@ -4,7 +4,7 @@
 
 ## 当前认知
 
-- 运行基线：macOS、Node 22、Cua Driver 0.38.0、Chrome/Edge；默认持久 MCP 连接，`native` 为 opt-in。
+- 运行基线：Web 自动化支持 macOS / Windows；Node 22；Cua Driver 0.38.0、Chrome/Edge；默认持久 MCP 连接，`native` 为 opt-in。桌面（macOS AX）自动化仅支持 macOS，Windows 会先拒绝 desktop bind 且不注册 desktop 工具。
 - 核心模块：`src/core`、`src/cua`（client / mcp / worker / native-host / profile-hygiene / daemon-recovery）、`src/driver`、`src/host`、`src/plugin`（tools + slash commands）、`src/recording`、`src/skill`、`src/store`、`src/replay`、`src/client`、`src/testing`。
 - 契约单一来源：`src/core/contracts.ts` 定义 `LAUNCH_MODES`、`ACTION_SPECS`、`TARGET_FIELD_SCHEMAS`、`WINDOW_TARGET_FIELD_SCHEMAS`；bind/replay/套件 的 JSON Schema、handler 白名单校验、driver 能力表都由这些常量派生。新增 launch 模式、动作 kind 或目标字段时只改这里，schema/校验/能力表自动跟随。
 - 存储布局：`.dsh/record-replay/recordings/<recordingId>/{manifest.json,steps.jsonl,runs/<runId>/}`；Skill 在 `.dsh/skill-library/`。

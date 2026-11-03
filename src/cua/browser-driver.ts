@@ -44,6 +44,8 @@ export interface CuaBrowserDriverOptions {
   readonly clickConfirmTimeoutMs?: number
   /** 点击效果确认的轮询间隔（默认 250ms）。 */
   readonly clickConfirmIntervalMs?: number
+  /** 测试可注入平台；桌面绑定只在 macOS 开放。 */
+  readonly platform?: NodeJS.Platform
 }
 
 function sleep(ms: number): Promise<void> {
@@ -174,6 +176,7 @@ export class CuaBrowserDriver implements BrowserDriver {
   private readonly tabFollowQuietPolls: number
   private readonly clickConfirmTimeoutMs: number
   private readonly clickConfirmIntervalMs: number
+  private readonly platform: NodeJS.Platform
   private readonly desktopBindings = new Map<string, BrowserBinding>()
   private desktopGeneration = 0
 
@@ -192,6 +195,7 @@ export class CuaBrowserDriver implements BrowserDriver {
     this.tabFollowQuietPolls = options.tabFollowQuietPolls ?? 3
     this.clickConfirmTimeoutMs = options.clickConfirmTimeoutMs ?? 1_500
     this.clickConfirmIntervalMs = options.clickConfirmIntervalMs ?? 250
+    this.platform = options.platform ?? process.platform
   }
 
   private async invoke(name: string, args: JsonObject, context: OperationContext): Promise<CuaToolResult> {
@@ -216,7 +220,12 @@ export class CuaBrowserDriver implements BrowserDriver {
   }
 
   async bind(input: BindBrowserInput, context: OperationContext): Promise<BrowserBinding> {
-    if (input.launch === 'desktop') return await this.bindDesktop(input, context)
+    if (input.launch === 'desktop') {
+      if (this.platform !== 'darwin') {
+        throw new BrowserDriverError('ACTION_UNSUPPORTED', 'Desktop bindings require macOS; use an existing or isolated browser binding for Web automation')
+      }
+      return await this.bindDesktop(input, context)
+    }
     if (input.launch === 'isolated') return await this.bindIsolated(context, input.profileName)
     const { pid, windowId } = input
     if (!Number.isInteger(pid) || pid <= 0 || !Number.isInteger(windowId) || windowId <= 0) {

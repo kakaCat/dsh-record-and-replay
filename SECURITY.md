@@ -23,7 +23,7 @@ profile before disclosing details.
 - The panel is same-origin authenticated. Its stop/discard routes derive the
   recording owner from the manifest and never accept a caller-supplied owner.
 - Cua/MCP daemon access and macOS Accessibility/Screen Recording grants are
-  operator prerequisites. Review what the driver can see before enabling
+  operator prerequisites for live recording. Review what the driver can see before enabling
   `launch: "existing"` on a personal browser profile.
 - `recording.privacy.deniedUrlPatterns` and `blockPrivateBrowsing` are
   best-effort guards, not a full data-loss-prevention system. The URL policy

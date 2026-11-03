@@ -7,12 +7,17 @@ import { promisify } from 'node:util'
 const execFileAsync = promisify(execFile)
 
 /** Candidate CLI locations, most specific first. */
-export function cuaDriverCandidates(env: NodeJS.ProcessEnv = process.env): string[] {
+export function cuaDriverCandidates(
+  env: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
+): string[] {
   const explicit = env['CUA_DRIVER_BIN']
+  const executable = platform === 'win32' ? 'cua-driver.exe' : 'cua-driver'
   return [
     ...(explicit === undefined || explicit.length === 0 ? [] : [explicit]),
-    join(homedir(), '.local', 'bin', 'cua-driver'),
-    '/Applications/CuaDriver.app/Contents/MacOS/cua-driver',
+    join(homedir(), '.local', 'bin', executable),
+    ...(platform === 'darwin' ? ['/Applications/CuaDriver.app/Contents/MacOS/cua-driver'] : []),
+    // Let the child-process launcher search PATH (including PATHEXT on Windows).
     'cua-driver',
   ]
 }

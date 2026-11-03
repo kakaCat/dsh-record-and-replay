@@ -8,10 +8,11 @@ changes need to stay testable without a live browser.
 
 Requirements:
 
-- macOS (the Cua driver and AX capture are macOS-only)
+- Web development: macOS or Windows
+- Desktop AX automation: macOS only (the desktop driver and Cua AX capture are macOS-only)
 - Node.js >= 22
 - pnpm 10
-- For live recording: `cua-driver` >= 0.38 on `PATH`, plus macOS Accessibility
+- For live macOS recording: `cua-driver` >= 0.38 on `PATH`, plus macOS Accessibility
   and Screen Recording grants for DSH
 
 ```bash

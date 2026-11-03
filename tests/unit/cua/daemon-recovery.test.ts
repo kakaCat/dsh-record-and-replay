@@ -2,7 +2,7 @@ import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { stopCuaDaemon } from '../../../src/cua/daemon-recovery.js'
+import { stopCuaDaemon, cuaDriverCandidates } from '../../../src/cua/daemon-recovery.js'
 
 async function script(root: string, name: string, exitCode: number): Promise<string> {
   const path = join(root, name)
@@ -12,6 +12,18 @@ async function script(root: string, name: string, exitCode: number): Promise<str
 }
 
 describe('cua/daemon-recovery', () => {
+  it('prefers the explicit CLI path, then looks up the platform executable', () => {
+    const win32 = cuaDriverCandidates({ CUA_DRIVER_BIN: 'custom-cua' }, 'win32')
+    expect(win32[0]).toBe('custom-cua')
+    expect(win32.some(candidate => candidate.endsWith('cua-driver.exe'))).toBe(true)
+    expect(win32).toContain('cua-driver')
+    expect(win32.some(candidate => candidate.includes('CuaDriver.app'))).toBe(false)
+
+    const darwin = cuaDriverCandidates({}, 'darwin')
+    expect(darwin).toContain('/Applications/CuaDriver.app/Contents/MacOS/cua-driver')
+    expect(darwin.some(candidate => candidate.endsWith('.exe'))).toBe(false)
+  })
+
   it('stops the daemon through the first working CLI candidate', async () => {
     const root = await mkdtemp(join(tmpdir(), 'cua-daemon-'))
     try {

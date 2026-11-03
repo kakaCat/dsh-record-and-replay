@@ -2,7 +2,19 @@
 
 ## Unreleased
 
+### Added
+
+- Windows Web platform adaptation: replay video uses ffmpeg `gdigrab` with a
+  `desktop` input, daemon recovery understands Windows executable names, and CI
+  runs the focused Web-platform test set plus build on `windows-latest`.
+
 ### Changed
+
+- Replay video finalization no longer depends on POSIX signals: ffmpeg receives
+  the standard `q` command through stdin on all supported platforms.
+- Desktop automation remains macOS-only. Desktop bindings fail fast before any
+  Cua call on other platforms, and the `record-replay-desktop` plugin line does
+  not register its tools there.
 
 - The eight `cua_desktop_*` tools moved out of the main plugin into their own
   bundle line `record-replay-desktop` (`dsh-record-replay/desktop`), inserted by

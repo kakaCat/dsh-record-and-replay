@@ -49,7 +49,7 @@ DSH 插件：把 Agent 通过 Cua Driver 执行的浏览器/桌面操作录成�
 ```mermaid
 flowchart LR
   A[Agent] -->|cua_record_action| B[Cua Driver]
-  B --> C[Chrome / Edge / macOS window]
+  B --> C[Chrome / Edge / 桌面窗口（macOS）]
   A --> D[Recording Store]
   D --> E[右侧栏面板 + 页脚 HUD]
   D --> F[Semantic Replay Runner]
@@ -64,9 +64,9 @@ flowchart LR
 
 ### 前置要求
 
-- macOS；Node.js ≥ 22；DSH ≥ `0.2.1-rc.5`
-- `cua-driver` ≥ 0.38 在 `PATH`，且 DSH 已获得 macOS Accessibility / Screen Recording 权限
-- `native` transport 是 opt-in；需要宿主 bundle 身份为 `com.trycua.driver`
+- Web 自动化：macOS 与 Windows；Node.js ≥ 22；DSH ≥ `0.2.1-rc.5`
+- macOS 需要 `cua-driver` ≥ 0.38 在 `PATH`，且 DSH 已获得 Accessibility / Screen Recording 权限；Windows Web 自动化使用兼容 Windows 的 Cua Driver 能力，桌面自动化暂不支持
+- `native` transport 是 opt-in；macOS 需要宿主 bundle 身份为 `com.trycua.driver`
 
 ### 安装
 
@@ -147,7 +147,7 @@ cua_record_export { "recordingId": "rec_..." }
 |---|---|
 | DSH | `>=0.2.1-rc.5 <0.3.0`（`engines.dsh`） |
 | Node.js | ≥ 22 |
-| 平台 | macOS（Cua Driver / AX） |
+| 平台 | Web：macOS / Windows；桌面：macOS only |
 | 浏览器 | Chrome / Edge；支持 `existing`、`isolated`、`desktop` 三种绑定 |
 | Cua | `mcp` 需 `cua-driver ≥ 0.38`；`native` 需 `@trycua/cua-driver` 0.28 |
 | Panel | DSH 右侧栏 + 左栏页脚；独立 `panel` 命令只读 |
@@ -182,7 +182,7 @@ pnpm check:boundary
 pnpm test:activity            # Playwright activity-view e2e
 ```
 
-CI 在 macOS 上跑 typecheck/单测/build/boundary，在 Ubuntu 上跑 Playwright e2e。
+CI 在 macOS 上跑 typecheck/单测/build/boundary，在 Windows 上跑 Web 平台适配单测与 build，在 Ubuntu 上跑 Playwright e2e。
 
 ## 贡献与许可
 

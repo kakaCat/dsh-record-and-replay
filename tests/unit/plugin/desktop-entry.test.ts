@@ -6,7 +6,7 @@ interface RegisteredTool {
   readonly name: string
 }
 
-function applyWithFakeContext(): RegisteredTool[] {
+function applyWithFakeContext(platform: NodeJS.Platform = process.platform): RegisteredTool[] {
   const tools: RegisteredTool[] = []
   const ctx = {
     logger: () => ({ info: () => undefined, warn: () => undefined }),
@@ -27,7 +27,7 @@ function applyWithFakeContext(): RegisteredTool[] {
       run()
     },
   }
-  apply(ctx)
+  apply(ctx, platform)
   return tools
 }
 
@@ -36,8 +36,8 @@ describe('plugin/desktop entry (record-replay-desktop line)', () => {
     expect(name).toBe('dsh-record-replay/desktop')
   })
 
-  it('registers exactly the 8 desktop tools and nothing else', () => {
-    const tools = applyWithFakeContext()
+  it('registers exactly the 8 desktop tools on macOS and nothing else', () => {
+    const tools = applyWithFakeContext('darwin')
     expect(tools.map(tool => tool.name)).toEqual([
       'cua_desktop_state',
       'cua_desktop_click',
@@ -48,5 +48,9 @@ describe('plugin/desktop entry (record-replay-desktop line)', () => {
       'cua_desktop_assert',
       'cua_desktop_screenshot',
     ])
+  })
+
+  it('does not register desktop tools on non-macOS platforms', () => {
+    expect(applyWithFakeContext('win32')).toEqual([])
   })
 })
