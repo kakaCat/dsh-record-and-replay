@@ -198,6 +198,8 @@ export interface ReplayPort {
   getRun(runId: RunId, principal: Principal): Promise<RunSummary | undefined>
   startReplay(input: StartReplayInput, principal: Principal): Promise<RunSummary>
   cancelRun(runId: RunId, principal: Principal): Promise<RunSummary>
+  /** Stop new runs, cancel active work and finalize recorders before driver disposal. */
+  dispose?(): Promise<void>
 }
 
 export interface CuaRecordReplayServiceOptions {
@@ -504,6 +506,7 @@ export class CuaRecordReplayService {
     }
     this.controllers.clear()
     await this.runner.drain()
+    await this.replay?.dispose?.()
 
     const bindings = [...this.bindings.values()]
     this.bindings.clear()

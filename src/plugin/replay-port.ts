@@ -1,6 +1,6 @@
 import * as path from 'node:path'
 import { newRunId, type OperationContext, type Principal, type RecordingId, type RunId } from '../core/api.js'
-import { ScreenRecorder } from '../cua/screen-recorder.js'
+import { ScreenRecorder, type VideoRecorder } from '../cua/screen-recorder.js'
 import { pruneRecordingVideos } from '../cua/video-retention.js'
 import type { BrowserDriver } from '../driver/api.js'
 import type {
@@ -28,6 +28,8 @@ export interface PluginReplayPortOptions {
   readonly videoDirFor?: (recordingId: RecordingId, runId: RunId) => string
   readonly videoFormat?: 'webm' | 'mp4'
   readonly videoMaxRuns?: number
+  /** Defaults to host ffmpeg; Docker injects a recorder running in its own container. */
+  readonly videoRecorderFactory?: () => VideoRecorder
 }
 
 interface RunStoreWithScan extends RunStore {
@@ -82,6 +84,8 @@ export function createPluginReplayPort(options: PluginReplayPortOptions): Replay
   const runners = new Map<RunId, SemanticReplayRunner>()
   const summaries = new Map<RunId, RunSummary>()
   const controllers = new Map<RunId, AbortController>()
+  const completions = new Map<RunId, { readonly promise: Promise<void>; readonly finish: () => void }>()
+  let disposed = false
 
   const ownerOf = async (recordingId: RecordingId): Promise<string | undefined> => {
     try {
@@ -113,8 +117,17 @@ export function createPluginReplayPort(options: PluginReplayPortOptions): Replay
       if (target === undefined) {
         throw new HostError('INVALID_ARGUMENT', 'replay target pid/windowId is required')
       }
+      if (disposed) throw new HostError('FEATURE_DISABLED', 'Replay runtime is being disposed')
       const runId = newRunId()
       const controller = new AbortController()
+      let finish = (): void => undefined
+      const completion = {
+        promise: new Promise<void>(resolve => { finish = resolve }),
+        finish: () => finish(),
+      }
+      completions.set(runId, completion)
+      controllers.set(runId, controller)
+      try {
       const replayPrincipal: Principal = {
         sessionId: `${principal.sessionId}:replay:${runId}`,
         agentId: principal.agentId,
@@ -139,13 +152,20 @@ export function createPluginReplayPort(options: PluginReplayPortOptions): Replay
         ...(target.launch === undefined ? {} : { launch: target.launch }),
         ...(input.values === undefined ? {} : { values: input.values }),
       })
-      const recorder = options.videoEnabled === true && options.videoDirFor !== undefined ? new ScreenRecorder() : undefined
+      const recorder = options.videoEnabled === true && options.videoDirFor !== undefined
+        ? (options.videoRecorderFactory?.() ?? new ScreenRecorder())
+        : undefined
       if (recorder !== undefined && options.videoDirFor !== undefined) {
         await recorder.start({ outputDir: options.videoDirFor(input.recordingId, runId), ...(options.videoFormat === undefined ? {} : { format: options.videoFormat }) }).catch(() => undefined)
       }
       let videoPath: string | undefined
+      let recorderStopped = false
+      const stopRecorder = async (): Promise<string | undefined> => {
+        if (recorder === undefined || recorderStopped) return undefined
+        recorderStopped = true
+        return recorder.stop()
+      }
       runners.set(runId, runner)
-      controllers.set(runId, controller)
       summaries.set(runId, {
         runId,
         recordingId: input.recordingId,
@@ -166,7 +186,7 @@ export function createPluginReplayPort(options: PluginReplayPortOptions): Replay
           signal: controller.signal,
         }, principal)
         const run = await runner.getRun(runId)
-        videoPath = await recorder?.stop()
+        videoPath = await stopRecorder()
         const base = summaryOf(run, principal, plan.stepCount)
         const summary = videoPath === undefined ? base : { ...base, videoPath }
         summaries.set(runId, summary)
@@ -181,7 +201,7 @@ export function createPluginReplayPort(options: PluginReplayPortOptions): Replay
         throw error
       } finally {
         if (recorder !== undefined) {
-          videoPath = videoPath ?? await recorder.stop().catch(() => undefined)
+          videoPath = videoPath ?? await stopRecorder().catch(() => undefined)
         }
         if (options.videoMaxRuns !== undefined && options.videoDirFor !== undefined) {
           const runsDir = path.dirname(path.dirname(options.videoDirFor(input.recordingId, runId)))
@@ -190,6 +210,16 @@ export function createPluginReplayPort(options: PluginReplayPortOptions): Replay
         runners.delete(runId)
         controllers.delete(runId)
       }
+      } finally {
+        completions.delete(runId)
+        completion.finish()
+      }
+    },
+
+    async dispose(): Promise<void> {
+      disposed = true
+      for (const controller of controllers.values()) controller.abort()
+      await Promise.all([...completions.values()].map(completion => completion.promise))
     },
 
     async getRun(runId: RunId, principal: Principal): Promise<RunSummary | undefined> {

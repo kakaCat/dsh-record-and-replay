@@ -55,6 +55,18 @@ describe('cua/screen-recorder', () => {
     expect(args).not.toContain('avfoundation')
   })
 
+  it('captures a Linux virtual display and supports a container-visible output path', () => {
+    const args = screenRecorderArgs({
+      outputDir: '/host/video',
+      platform: 'linux',
+      input: ':99.0',
+      fileArgument: '/out/run/video/replay.webm',
+    }, '/host/video/replay.webm')
+    expect(args).toEqual(expect.arrayContaining(['-f', 'x11grab', '-i', ':99.0']))
+    expect(args.at(-1)).toBe('/out/run/video/replay.webm')
+    expect(args).not.toContain('avfoundation')
+  })
+
   it('finalizes the video through ffmpeg q instead of POSIX signals', async () => {
     const root = await mkdtemp(join(tmpdir(), 'screen-recorder-'))
     const file = join(root, 'replay.webm')

@@ -19,7 +19,7 @@ The package declares `dsh.bundle.patch`; the profile loader inserts the host plu
 
 ```yaml
 - id: record-replay
-  name: dsh-record-replay
+  name: dsh-record-and-replay
   config:
     transport: mcp           # default mcp (0.38 CLI daemon); native is opt-in
     transportFallback: true  # native failure falls back to MCP and reports why
@@ -41,6 +41,37 @@ The package declares `dsh.bundle.patch`; the profile loader inserts the host plu
 ```
 
 Feature switches also trim the model tool surface: when a switch is off, tools that could only answer `FEATURE_DISABLED` are not registered at all. `recording: false` drops `cua_record_start` / `cua_record_bind_browser` / `cua_record_observe` / `cua_record_action`; `replay: false` drops `cua_replay_start`; `skill: false` drops `cua_skill_generate` / `cua_skill_install` / `cua_skill_feedback`. Finishing (`stop` / `discard` / `export`), cancel/release and read tools stay available, and `cua_record_replay_status` reports the skipped names under `disabledTools`.
+
+## Docker backend
+
+The optional Docker backend is an **independent Cordis plugin row**, `record-replay-docker` (package subpath `dsh-record-and-replay/docker`). It is **disabled by default**; enable it on the DSH plugin page, or enable the row explicitly:
+
+```yaml
+- id: record-replay-docker
+  name: dsh-record-and-replay/docker
+  disabled: false
+  config:
+    dockerBin: docker
+    # image: your-custom-tag  # omit for the content-addressed bundled tag
+    autoBuild: true
+    display: ':99'
+    width: 1280
+    height: 720
+    startupTimeoutMs: 30000
+    buildTimeoutMs: 600000
+    persistProfiles: true
+```
+
+`image` may select a custom tag. `autoBuild: false` disables image building; otherwise the first use builds the content-and-architecture-addressed bundled image when it is missing. A Docker daemon is required.
+
+The backend keeps the existing tools, store, panel and semantic replay, but runs them against a plugin-managed native Linux container (`linux/amd64` or `linux/arm64`). The bundled `docker/Dockerfile` and `entrypoint.sh` supply Xvfb, Openbox, Google Chrome on AMD64 or Debian Chromium on ARM64, Cua Driver 0.38.0 and ffmpeg; Rosetta emulation is not required.
+
+- Containers start lazily per workspace and are removed on runtime disposal or when the Docker row is toggled off.
+- Only `launch: "isolated"` is supported. Host `existing` and `desktop` targets are rejected, and native-to-local fallback does not apply.
+- Replay video uses ffmpeg `x11grab` inside the container; a bind mount writes it to the existing `runs/<runId>/video/` directory.
+- With the default `persistProfiles: true`, named Cua profiles use a per-workspace home volume and are not deleted with the container.
+- The container runs as a non-root user with a read-only root filesystem. Chrome's namespace sandbox requires `SYS_ADMIN` and `SYS_CHROOT` after `cap-drop ALL`; the plugin does not use `--privileged` or mount the Docker socket.
+- DSH sandbox policy does not confine container internals.
 
 ## Transports
 
@@ -228,7 +259,7 @@ Cua 0.38 may refuse `existing` attachment with `background_unavailable` (the bro
 
 ## Desktop (macOS AX)
 
-Cua can drive whole windows, not only browsers. The desktop tool set ships as a **separate bundle line** — `record-replay-desktop` (`dsh-record-replay/desktop`), inserted by the same `cordis.patch.yml` and **disabled by default**, because these names are a second action vocabulary next to `cua_record_action`. Enable it on the DSH plugin page (one toggle per line, like `dsh-window`); while the line is off, its `apply` never runs and the 8 tools below are completely absent from the model surface. The desktop line shares the main line's workspace runtimes and Cua transport; it carries no config of its own.
+Cua can drive whole windows, not only browsers. The desktop tool set ships as a **separate bundle line** — `record-replay-desktop` (`dsh-record-and-replay/desktop`), inserted by the same `cordis.patch.yml` and **disabled by default**, because these names are a second action vocabulary next to `cua_record_action`. Enable it on the DSH plugin page (one toggle per line, like `dsh-window`); while the line is off, its `apply` never runs and the 8 tools below are completely absent from the model surface. The desktop line shares the main line's workspace runtimes and Cua transport; it carries no config of its own.
 
 - `cua_desktop_state` — snapshot one window: AX role/label/value/enabled (read-only);
 - `cua_desktop_click` — click one element, re-snapshotting first and targeting by role/label;
@@ -264,8 +295,9 @@ runs/<runId>/video/replay.webm
 ```
 
 - enabled by default; set `{ "replay": { "video": false } }` to turn it off;
-- `DSH_REPLAY_VIDEO_INPUT` overrides the capture input (macOS `avfoundation` default `0:none` = first screen, no audio; Windows `gdigrab` default `desktop`);
-- capture is whole-screen, so other windows may appear; macOS needs Screen Recording permission;
+- host capture input can be overridden with `DSH_REPLAY_VIDEO_INPUT` (macOS `avfoundation` default `0:none` = first screen, no audio; Windows `gdigrab` default `desktop`);
+- host capture is whole-screen, so other windows may appear; macOS host capture needs Screen Recording permission;
+- Docker replay uses container `x11grab`; a bind mount preserves the Run video path above;
 - stopping writes ffmpeg's `q` command to stdin so the container finalizes without relying on POSIX signals;
 - if ffmpeg cannot start, the replay still succeeds and simply has no video.
 
@@ -655,6 +687,7 @@ Values are used in memory only and are never written to the Run.
 - Desktop automation: macOS only (`launch: "desktop"` and `record-replay-desktop` remain disabled on other platforms)
 - `native` transport: `@trycua/cua-driver` `0.28.0` (installed as a dependency; per-platform binaries come from its optional dependencies)
 - `mcp` transport: `cua-driver` `>=0.38.0` on `PATH`, with the daemon already authorized for existing-profile access
+- Optional Docker backend: a Docker daemon with native `linux/amd64` or `linux/arm64` container support
 - The macOS DSH app needs Accessibility and Screen Recording grants; Windows replay video additionally needs ffmpeg, and degrades to no-video when ffmpeg is unavailable
 
 ## Current limitations

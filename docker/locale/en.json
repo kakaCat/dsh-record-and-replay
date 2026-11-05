@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Docker browser automation",
+    "description": "Runs Cua browser recording and replay in the plugin-managed Docker virtual desktop, with a separate enablement toggle."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Docker 浏览器自动化",
+    "description": "在插件管理的 Docker 虚拟桌面中运行 Cua 浏览器录制与回放，可独立启用或停用。"
+  }
+}

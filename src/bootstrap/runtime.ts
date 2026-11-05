@@ -8,6 +8,7 @@
  */
 import * as path from 'node:path'
 
+import type { VideoRecorder } from '../cua/screen-recorder.js'
 import type { BrowserDriver } from '../driver/api.js'
 import type { HostConfig } from '../host/config.js'
 import type { ReplayPort, RunSummary } from '../host/index.js'
@@ -86,6 +87,8 @@ export interface WorkspaceReplayRuntimeOptions {
   readonly runStore: FsRunStore
   /** Called after a replay reaches a terminal state; failures are advisory. */
   readonly onRunTerminal?: (run: RunSummary) => void | Promise<void>
+  /** Optional execution-environment-specific recorder (Docker uses container ffmpeg). */
+  readonly videoRecorderFactory?: () => VideoRecorder
 }
 
 /**
@@ -102,6 +105,7 @@ export function createWorkspaceReplayRuntime(options: WorkspaceReplayRuntimeOpti
     videoEnabled: config.replay.video,
     videoFormat: config.replay.videoFormat,
     videoMaxRuns: config.replay.videoMaxRuns,
+    ...(options.videoRecorderFactory === undefined ? {} : { videoRecorderFactory: options.videoRecorderFactory }),
     videoDirFor: (recordingId, runId) =>
       path.join(
         store.root,

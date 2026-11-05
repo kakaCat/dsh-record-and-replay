@@ -239,7 +239,9 @@ function applyPlugin(ctx: unknown, rawConfig?: unknown): void {
               },
               ...(runtime.recovery === undefined ? {} : { recovery: runtime.recovery }),
               replayEnabled: runtime.config.replay.enabled,
-              transport: runtime.config.transport,
+              configuredTransport: runtime.config.transport,
+              transport: transport.requested,
+              dockerEnabled: transport.requested === 'docker',
               transportActive: transport.active,
               transportFallbackReason: transport.fallbackReason,
               tools: selectToolsForFamily(createHostTools(createLazyService(getRuntimeForExec) as never), config.tools.allow)
@@ -282,7 +284,7 @@ function applyPlugin(ctx: unknown, rawConfig?: unknown): void {
             const descriptor = await runtime.recordings.start({
               title: String(input.title ?? ''),
               ...(intent === undefined || intent.length === 0 ? {} : { intent }),
-              driver: { id: 'cua-driver', version: '0.38.0', transport: 'mcp' },
+              driver: { id: 'cua-driver', version: '0.38.0', transport: runtime.driver.transport ?? 'mcp' },
               browser: { app: typeof input.browserApp === 'string' && input.browserApp.length > 0 ? input.browserApp : 'Chrome' },
               ...(consent === undefined ? {} : { consent }),
               ...(typeof input.idempotencyKey === 'string' ? { idempotencyKey: input.idempotencyKey } : {}),
@@ -472,7 +474,9 @@ function applyPlugin(ctx: unknown, rawConfig?: unknown): void {
         workspaceRoot: runtime.workspaceRoot,
         recordingEnabled: runtime.config.recording.enabled,
         replayEnabled: runtime.config.replay.enabled,
-        transport: runtime.config.transport,
+        configuredTransport: runtime.config.transport,
+        transport: transport.requested,
+        dockerEnabled: transport.requested === 'docker',
         transportActive: transport.active,
         transportFallbackReason: transport.fallbackReason,
         activeRecording: own?.recordingId ?? null,
@@ -483,7 +487,7 @@ function applyPlugin(ctx: unknown, rawConfig?: unknown): void {
       assertFeatureEnabled(runtime.config, 'recording')
       const descriptor = await runtime.recordings.start({
         title,
-        driver: { id: 'cua-driver', version: '0.38.0', transport: 'mcp' },
+        driver: { id: 'cua-driver', version: '0.38.0', transport: runtime.driver.transport ?? 'mcp' },
         browser: { app: 'Chrome' },
         ...(runtime.config.recording.consent === 'off'
           ? {}

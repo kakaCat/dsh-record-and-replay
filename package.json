@@ -1,6 +1,6 @@
 {
   "name": "dsh-record-and-replay",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "type": "module",
   "description": "Cua Driver-only browser record/replay for DSH (host plugin)",
   "author": "kakaCat",
@@ -43,7 +43,14 @@
       "types": "./dist/desktop.d.mts",
       "import": "./dist/desktop.mjs",
       "default": "./dist/desktop.mjs"
-    }
+    },
+    "./docker": {
+      "types": "./dist/docker.d.mts",
+      "import": "./dist/docker.mjs",
+      "default": "./dist/docker.mjs"
+    },
+    "./docker/locale/*.json": "./docker/locale/*.json",
+    "./docker/icon": "./docker/icon.svg"
   },
   "files": [
     "CHANGELOG.md",
@@ -52,6 +59,7 @@
     "REFERENCE.md",
     "cordis.patch.yml",
     "dist",
+    "docker",
     "docs/screenshots"
   ],
   "engines": {

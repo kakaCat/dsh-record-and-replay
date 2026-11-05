@@ -2,8 +2,18 @@
 
 ## Unreleased
 
+## 0.1.0 — 2026-11-05
+
 ### Added
 
+- Optional Docker backend in the independent, disabled-by-default
+  `record-replay-docker` row (`dsh-record-and-replay/docker`). It reuses the
+  existing tools, store, panel and semantic replay with plugin-managed native
+  `linux/amd64`/`linux/arm64` containers, bundled Chrome/Chromium/Cua Driver
+  0.38.0/ffmpeg image build, per-workspace named-profile volumes and `x11grab`
+  video bind-mounted into the
+  existing Run video directory. It requires a Docker daemon and supports only
+  `launch: "isolated"`.
 - Windows Web platform adaptation: replay video uses ffmpeg `gdigrab` with a
   `desktop` input, daemon recovery understands Windows executable names, and CI
   runs the focused Web-platform test set plus build on `windows-latest`.
@@ -17,9 +27,9 @@
   not register its tools there.
 
 - The eight `cua_desktop_*` tools moved out of the main plugin into their own
-  bundle line `record-replay-desktop` (`dsh-record-replay/desktop`), inserted by
-  the same `cordis.patch.yml` and **disabled by default** — one bundle, two lines,
-  one toggle per line on the DSH plugin page (same pattern as `dsh-window`). While
+  bundle line `record-replay-desktop` (`dsh-record-and-replay/desktop`), inserted by
+  the same `cordis.patch.yml` and **disabled by default** — each independent row
+  has its own toggle on the DSH plugin page (same pattern as `dsh-window`). While
   the line is off, its `apply` never runs and the tools are absent from the model
   surface entirely; both lines share the same workspace runtimes and Cua transport
   through `plugin/shared.ts`. The default model-facing surface drops from 28 to 19
@@ -39,6 +49,16 @@
   path (`dsh-record-replay test`, same parser, runner, JUnit output and flags), and
   the tool only cost context the model rarely used. Calls that used `cua_test_run`
   should run the CLI instead.
+
+### Fixed
+
+- The loader rows are addressed by the real package name (`dsh-record-and-replay`
+  and `dsh-record-and-replay/desktop`), and the client bundle registers under the
+  same id. After the 0.0.3 npm rename the rows still said `dsh-record-replay`; DSH's
+  client scanner requires the row name to equal `package.json`'s name, so a host
+  installed through a dependency alias kept its tools but silently lost the client
+  half — no 「录制回放」 entry in the left sidebar footer and no right-column panel.
+  Existing profiles must reinstall the bundle under the real package name.
 
 ## 0.0.3 — 2026-11-01
 

@@ -20,6 +20,14 @@ export interface ScreenRecorderOptions {
   readonly ffmpegPath?: string
   /** 测试可注入平台；生产默认当前操作系统。 */
   readonly platform?: NodeJS.Platform
+  /** ffmpeg 执行环境看到的输出路径；容器包装时与宿主机 file 不同。 */
+  readonly fileArgument?: string
+}
+
+/** ReplayPort 的最小录像接口；本机与 Docker 各自提供实现。 */
+export interface VideoRecorder {
+  start(options: ScreenRecorderOptions): Promise<void>
+  stop(): Promise<string | undefined>
 }
 
 /** 生成 ffmpeg 参数；导出便于单测，不实际起进程。 */
@@ -31,7 +39,9 @@ export function screenRecorderArgs(options: ScreenRecorderOptions, file: string)
   const platform = options.platform ?? process.platform
   const capture = platform === 'win32'
     ? ['-f', 'gdigrab', '-i', options.input ?? process.env['DSH_REPLAY_VIDEO_INPUT'] ?? 'desktop']
-    : ['-f', 'avfoundation', '-i', options.input ?? process.env['DSH_REPLAY_VIDEO_INPUT'] ?? '0:none']
+    : platform === 'linux'
+      ? ['-f', 'x11grab', '-i', options.input ?? process.env['DSH_REPLAY_VIDEO_INPUT'] ?? ':99.0']
+      : ['-f', 'avfoundation', '-i', options.input ?? process.env['DSH_REPLAY_VIDEO_INPUT'] ?? '0:none']
   return [
     '-y',
     ...capture,
@@ -39,7 +49,7 @@ export function screenRecorderArgs(options: ScreenRecorderOptions, file: string)
     '-vf', `scale=${String(options.width ?? 1280)}:-2`,
     ...codec,
     '-an',
-    file,
+    options.fileArgument ?? file,
   ]
 }
 

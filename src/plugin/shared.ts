@@ -15,7 +15,7 @@ import * as path from 'node:path'
 import { appendFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 
-import type { BrowserDriver } from '../driver/api.js'
+import { BrowserDriverError, type BrowserDriver } from '../driver/api.js'
 import {
   assertRecordingId,
   type JsonObject,
@@ -44,6 +44,7 @@ import { stopCuaDaemon } from '../cua/daemon-recovery.js'
 import {
   createRecordReplayRuntime,
   derivePrincipal,
+  HostError,
   resolveHostConfig,
   type HostCallContext,
   type HostConfig,
@@ -57,6 +58,8 @@ import {
 import type { RecordingService } from '../recording/index.js'
 import type { RecordingStore } from '../store/api.js'
 import { createWorkspaceReplayRuntime, createWorkspaceStoreRuntime } from '../bootstrap/runtime.js'
+import type { DockerPluginConfig } from '../docker/config.js'
+import { DockerCuaRuntime } from '../docker/runtime.js'
 import { applyAutoFeedback } from './auto-feedback.js'
 import { createSkillRuntime, type SkillRuntime } from './skill-runtime.js'
 
@@ -85,10 +88,12 @@ export interface ExecLike {
   readonly signal?: AbortSignal
 }
 
+export type ExecutionTransport = TransportChoice | 'docker'
+
 /** 状态工具回报的传输画像：请求值、实际值、回退原因。 */
 export interface CuaTransportState {
-  readonly requested: TransportChoice
-  readonly active: TransportChoice | null
+  readonly requested: ExecutionTransport
+  readonly active: ExecutionTransport | null
   readonly fallbackReason: string | null
 }
 
@@ -122,6 +127,7 @@ export interface WorkspaceRuntime {
 interface LazyCuaDriverOptions {
   readonly transport: TransportChoice
   readonly allowFallback: boolean
+  readonly dockerRuntime?: DockerCuaRuntime
   readonly onFallback?: (reason: string) => void
 }
 
@@ -142,41 +148,57 @@ function isTransportFailure(error: unknown): boolean {
 
 export class LazyCuaDriver implements BrowserDriver {
   readonly id = 'cua-driver-lazy'
-  private readonly choice: TransportChoice
+  private readonly choice: ExecutionTransport
   private readonly allowFallback: boolean
+  private readonly dockerRuntime: DockerCuaRuntime | undefined
   private readonly onFallback: ((reason: string) => void) | undefined
   private readonly recoverStuckDaemon: boolean
-  private preferred: TransportChoice
+  private preferred: ExecutionTransport
   private clientPromise: Promise<CuaDriverClient> | undefined
   private driver: CuaBrowserDriver | undefined
-  private active: TransportChoice | null = null
+  private active: ExecutionTransport | null = null
   private fallbackReason: string | null = null
   private retriedAfterNativeFailure = false
 
   constructor(options: LazyCuaDriverOptions) {
-    this.choice = options.transport
-    this.preferred = options.transport
+    this.dockerRuntime = options.dockerRuntime
+    this.choice = this.dockerRuntime === undefined ? options.transport : 'docker'
+    this.preferred = this.choice
     this.allowFallback = options.allowFallback
     this.onFallback = options.onFallback
     this.recoverStuckDaemon = process.env['DSH_CUA_DAEMON_RECOVERY'] !== '0'
+  }
+
+  /** Persisted in Recording/Run audit metadata; local drivers retain their old value. */
+  get transport(): string {
+    return this.choice
   }
 
   state(): CuaTransportState {
     return { requested: this.choice, active: this.active, fallbackReason: this.fallbackReason }
   }
 
-  private async connect(kind: TransportChoice): Promise<CuaDriverClient> {
-    // native 走独立子进程：SDK 崩了只死子进程，DSH 主进程不受影响。
+  private requireDockerRuntime(): DockerCuaRuntime {
+    if (this.dockerRuntime === undefined) {
+      throw new CuaTransportError('CUA_TRANSPORT_UNAVAILABLE', 'Docker backend is not enabled')
+    }
+    return this.dockerRuntime
+  }
+
+  private async connect(kind: ExecutionTransport): Promise<CuaDriverClient> {
+    // Docker 只替换执行环境和启动命令，MCP 协议与语义驱动完全复用。
     const transport = kind === 'native'
       ? await WorkerTransport.create()
-      : await McpTransport.create()
+      : kind === 'docker'
+        ? await this.requireDockerRuntime().connect()
+        : await McpTransport.create()
     try {
       const context: OperationContext = {
         principal: { sessionId: 'dsh-record-replay-probe', agentId: 'dsh-record-replay-probe' },
         callId: 'cua-health-probe',
         origin: 'internal',
-        // 探活必须有界：原生 SDK 起宿主失败时可能一直不返回。
-        signal: AbortSignal.timeout(15_000),
+        // 探活必须有界；Docker 首次启动/仿真使用本行配置的启动预算。
+        signal: AbortSignal.timeout(kind === 'docker' ? this.requireDockerRuntime().config.startupTimeoutMs : 15_000),
       }
       const health = await transport.callTool('health_report', {}, context)
       const version = cuaVersionOf(health)
@@ -196,6 +218,9 @@ export class LazyCuaDriver implements BrowserDriver {
         minimumDriverVersion: kind === 'native'
           ? CUA_NATIVE_MINIMUM_DRIVER_VERSION
           : CUA_MINIMUM_DRIVER_VERSION,
+        ...(kind === 'docker'
+          ? { connectTimeoutMs: this.requireDockerRuntime().config.startupTimeoutMs }
+          : {}),
       })
       this.active = kind
       return client
@@ -215,8 +240,14 @@ export class LazyCuaDriver implements BrowserDriver {
     }
   }
 
-  /** 桌面工具共用同一条传输；仍走 LazyCuaDriver 的重连/回退逻辑。 */
+  /** 桌面工具共用同一条传输；Docker 是 Linux 浏览器后端，不承接 macOS AX 窗口。 */
   async callTool(name: string, args: JsonObject, context: OperationContext): Promise<CuaToolResult> {
+    if (this.dockerRuntime !== undefined) {
+      throw new CuaTransportError(
+        'ACTION_UNSUPPORTED',
+        'macOS desktop tools cannot use the Docker backend; disable record-replay-docker or record-replay-desktop',
+      )
+    }
     return (await this.ensureClient()).callTool(name, args, context)
   }
 
@@ -233,7 +264,10 @@ export class LazyCuaDriver implements BrowserDriver {
 
   private async ensureDriver(): Promise<CuaBrowserDriver> {
     if (this.driver === undefined) {
-      this.driver = new CuaBrowserDriver(await this.ensureClient())
+      const docker = this.dockerRuntime
+      this.driver = new CuaBrowserDriver(await this.ensureClient(), undefined, {
+        ...(docker === undefined ? {} : { profileHygiene: (profileName: string) => docker.prepareProfile(profileName) }),
+      })
     }
     return this.driver
   }
@@ -271,15 +305,25 @@ export class LazyCuaDriver implements BrowserDriver {
   }
 
   async bind(input: Parameters<BrowserDriver['bind']>[0], context: Parameters<BrowserDriver['bind']>[1]) {
+    if (this.dockerRuntime !== undefined && input.launch !== 'isolated') {
+      throw new BrowserDriverError(
+        'ACTION_UNSUPPORTED',
+        'Docker backend supports only launch: "isolated"; host existing/desktop windows are not container targets',
+      )
+    }
     const driver = await this.ensureDriver()
     try {
       return await driver.bind(input, context)
     } catch (error) {
       // 已知的 daemon 卡死形态：重启一次 daemon 再试，避免用户每次重启 DSH 都要手动 stop。
       if (this.recoverStuckDaemon && isStuckDaemonFailure(error)) {
-        const stopped = await stopCuaDaemon()
+        const stopped = this.dockerRuntime === undefined
+          ? await stopCuaDaemon()
+          : await this.dockerRuntime.restart().then(() => true).catch(() => false)
         if (stopped) {
-          this.onFallback?.('Cua daemon was stuck (tool_invocation_failed); restarted it once')
+          this.onFallback?.(this.dockerRuntime === undefined
+            ? 'Cua daemon was stuck (tool_invocation_failed); restarted it once'
+            : 'Docker Cua runtime was stuck (tool_invocation_failed); recreated its container once')
           await this.reset()
           return await (await this.ensureDriver()).bind(input, context)
         }
@@ -328,9 +372,10 @@ export class LazyCuaDriver implements BrowserDriver {
   }
 
   async dispose(): Promise<void> {
-    if (this.clientPromise === undefined) return
-    const client = await this.clientPromise.catch(() => undefined)
+    const client = await this.clientPromise?.catch(() => undefined)
     if (client !== undefined) await client.close().catch(() => undefined)
+    // A recorder may have started the container before an MCP client existed.
+    await this.dockerRuntime?.dispose()
   }
 }
 
@@ -442,6 +487,18 @@ function targetSummaryOfAction(action: { kind: string; target?: { role?: string;
 // ---------------------------------------------------------------------------
 
 let sharedConfig: HostConfig | undefined
+let sharedDockerConfig: DockerPluginConfig | undefined
+
+/** The optional /docker row owns this registration; disabling it restores local execution. */
+export function registerSharedDockerConfig(config: DockerPluginConfig): () => void {
+  if (sharedDockerConfig !== undefined) {
+    throw new HostError('CONFIG_INVALID', 'Docker backend is already enabled by another plugin instance')
+  }
+  sharedDockerConfig = config
+  return () => {
+    if (sharedDockerConfig === config) sharedDockerConfig = undefined
+  }
+}
 
 /** 主线在 apply 时登记解析后的配置；重复登记以第一次为准（行重复挂载不抢配置）。 */
 export function registerSharedConfig(config: HostConfig): void {
@@ -449,6 +506,7 @@ export function registerSharedConfig(config: HostConfig): void {
 }
 
 const runtimeByWorkspace = new Map<string, Promise<WorkspaceRuntime>>()
+let runtimeDisposalBarrier: Promise<void> = Promise.resolve()
 
 async function createWorkspaceRuntime(
   workspaceRoot: string,
@@ -457,9 +515,15 @@ async function createWorkspaceRuntime(
 ): Promise<WorkspaceRuntime> {
   const core = await createWorkspaceStoreRuntime({ workspaceRoot, config })
   const { storeRoot, store, recordings, runStore } = core
+  const dockerRuntime = sharedDockerConfig === undefined ? undefined : new DockerCuaRuntime({
+    config: sharedDockerConfig,
+    workspaceRoot,
+    storeRoot,
+  })
   const lazyDriver = new LazyCuaDriver({
     transport: config.transport,
     allowFallback: config.transportFallback,
+    ...(dockerRuntime === undefined ? {} : { dockerRuntime }),
     onFallback: (reason: string) => logger?.warn(`dsh-record-replay: ${reason}`),
   })
   // Skill 库与录制库共用工作区粒度：开关、根目录都来自同一份已校验配置。
@@ -471,6 +535,7 @@ async function createWorkspaceRuntime(
     store,
     recordings,
     runStore,
+    ...(dockerRuntime === undefined ? {} : { videoRecorderFactory: () => dockerRuntime.createVideoRecorder() }),
     onRunTerminal: async (run) => {
       await applyAutoFeedback({
         run,
@@ -504,14 +569,17 @@ async function createWorkspaceRuntime(
   }
 }
 
-export function runtimeForWorkspace(workspaceRoot: string, logger?: PluginLogger): Promise<WorkspaceRuntime> {
+export async function runtimeForWorkspace(workspaceRoot: string, logger?: PluginLogger): Promise<WorkspaceRuntime> {
+  // A backend toggle cannot create the replacement runtime until old replays,
+  // recorders and containers have finished their teardown.
+  await runtimeDisposalBarrier
   const resolved = path.resolve(workspaceRoot)
   let runtime = runtimeByWorkspace.get(resolved)
   if (runtime === undefined) {
     runtime = createWorkspaceRuntime(resolved, sharedConfig ?? resolveHostConfig(undefined), logger)
     runtimeByWorkspace.set(resolved, runtime)
     void runtime.catch(() => {
-      runtimeByWorkspace.delete(resolved)
+      if (runtimeByWorkspace.get(resolved) === runtime) runtimeByWorkspace.delete(resolved)
     })
   }
   return runtime
@@ -527,17 +595,22 @@ export function getRuntime(exec: ExecLike, logger?: PluginLogger): Promise<Works
   return runtimeForWorkspace(sessionCwdOf(exec) ?? process.cwd(), logger)
 }
 
-/** 卸载时释放全部工作区运行时（幂等；只有主线登记这个清理）。 */
+/** 主线卸载或 Docker 后端切换时释放全部工作区运行时（幂等）。 */
 export async function disposeAllRuntimes(): Promise<void> {
-  const runtimes = [...runtimeByWorkspace.values()]
-  runtimeByWorkspace.clear()
-  await Promise.all(runtimes.map(async (runtime) => {
-    try {
-      await (await runtime).host.dispose()
-    } catch {
-      // 收尾失败不覆盖主流程。
-    }
-  }))
+  const dispose = async (): Promise<void> => {
+    const runtimes = [...runtimeByWorkspace.values()]
+    runtimeByWorkspace.clear()
+    await Promise.all(runtimes.map(async (runtime) => {
+      try {
+        await (await runtime).host.dispose()
+      } catch {
+        // 收尾失败不覆盖主流程。
+      }
+    }))
+  }
+  const pending = runtimeDisposalBarrier.then(dispose, dispose)
+  runtimeDisposalBarrier = pending
+  await pending
 }
 
 // ---------------------------------------------------------------------------

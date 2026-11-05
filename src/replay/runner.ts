@@ -194,7 +194,7 @@ export class SemanticReplayRunner implements ReplayService {
       driver: {
         id: this.driver.id,
         version: (await this.driver.capabilities()).driverVersion,
-        transport: 'mcp',
+        transport: this.driver.transport ?? 'mcp',
       },
       status: 'preparing',
       startedAt,

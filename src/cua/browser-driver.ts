@@ -46,6 +46,8 @@ export interface CuaBrowserDriverOptions {
   readonly clickConfirmIntervalMs?: number
   /** 测试可注入平台；桌面绑定只在 macOS 开放。 */
   readonly platform?: NodeJS.Platform
+  /** Named-profile cleanup runs in the execution world that owns the browser. */
+  readonly profileHygiene?: (profileName: string) => Promise<void>
 }
 
 function sleep(ms: number): Promise<void> {
@@ -177,6 +179,7 @@ export class CuaBrowserDriver implements BrowserDriver {
   private readonly clickConfirmTimeoutMs: number
   private readonly clickConfirmIntervalMs: number
   private readonly platform: NodeJS.Platform
+  private readonly profileHygiene: (profileName: string) => Promise<void>
   private readonly desktopBindings = new Map<string, BrowserBinding>()
   private desktopGeneration = 0
 
@@ -196,6 +199,7 @@ export class CuaBrowserDriver implements BrowserDriver {
     this.clickConfirmTimeoutMs = options.clickConfirmTimeoutMs ?? 1_500
     this.clickConfirmIntervalMs = options.clickConfirmIntervalMs ?? 250
     this.platform = options.platform ?? process.platform
+    this.profileHygiene = options.profileHygiene ?? (profileName => suppressSessionRestore(profileName))
   }
 
   private async invoke(name: string, args: JsonObject, context: OperationContext): Promise<CuaToolResult> {
@@ -503,7 +507,7 @@ export class CuaBrowserDriver implements BrowserDriver {
       const profile = profileName === undefined
         ? { mode: 'isolated_new' }
         : { mode: 'isolated_named', name: profileName }
-      if (profileName !== undefined) await suppressSessionRestore(profileName)
+      if (profileName !== undefined) await this.profileHygiene(profileName)
       const prepared = ensureOk(await this.invoke('browser_prepare', {
         session: cuaSession,
         profile,
@@ -520,7 +524,9 @@ export class CuaBrowserDriver implements BrowserDriver {
       for (let attempt = 0; attempt < 25 && windowId === undefined; attempt += 1) {
         const listing = objectOfResult(await this.invoke('list_windows', {}, context))
         const rows = Array.isArray(listing['windows']) ? listing['windows'] as JsonObject[] : []
-        const candidates = rows.filter(row => Number(row['pid']) === pid && row['layer'] === 0)
+        // macOS reports layer=0; Linux X11 omits layer entirely for the same
+        // top-level windows. Missing is accepted, a known nonzero layer is not.
+        const candidates = rows.filter(row => Number(row['pid']) === pid && (row['layer'] === undefined || Number(row['layer']) === 0))
           .filter(row => Number((row['bounds'] as JsonObject | undefined)?.['width'] ?? 0) >= 500)
         const chosen = candidates.find(row => row['is_on_screen'] === true) ?? candidates[0]
         const value = Number(chosen?.['window_id'])
@@ -529,7 +535,7 @@ export class CuaBrowserDriver implements BrowserDriver {
           break
         }
         if (fallbackWindowId === undefined) {
-          const any = rows.find(row => Number(row['pid']) === pid && row['layer'] === 0)
+          const any = rows.find(row => Number(row['pid']) === pid && (row['layer'] === undefined || Number(row['layer']) === 0))
           const fallback = Number(any?.['window_id'])
           if (Number.isInteger(fallback) && fallback > 0) fallbackWindowId = fallback
         }

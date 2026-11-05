@@ -16,7 +16,9 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 const root = path.dirname(fileURLToPath(import.meta.url))
-const PLUGIN_ID = 'dsh-record-replay'
+// Must equal package.json "name": the Host keys the client graph row by the
+// package name and looks this id up when it imports the registered factory.
+const PLUGIN_ID = 'dsh-record-and-replay'
 
 function dshClientBundle() {
   return {

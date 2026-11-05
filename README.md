@@ -118,7 +118,7 @@ cua_record_export { "recordingId": "rec_..." }
 
 ```yaml
 - id: record-replay
-  name: dsh-record-replay
+  name: dsh-record-and-replay
   config:
     recording:
       maxDurationSeconds: 1800
@@ -133,6 +133,26 @@ cua_record_export { "recordingId": "rec_..." }
 ```
 
 完整配置（transport、容量、视频、工具白名单、路径等）见 [REFERENCE.md](REFERENCE.md)。
+
+### Docker 后端（可选）
+
+独立 Cordis 插件行 `record-replay-docker`（包子路径 `dsh-record-and-replay/docker`）**默认关闭**，可在 DSH 插件页开启，或使用基本配置：
+
+```yaml
+- id: record-replay-docker
+  name: dsh-record-and-replay/docker
+  disabled: false
+```
+
+它复用现有工具、存储、面板和语义回放，但由插件管理与宿主机架构一致的 Linux 容器（amd64/arm64）。随包的 `docker/Dockerfile` 与 `entrypoint.sh` 提供 Xvfb、Openbox、Google Chrome/Chromium、Cua Driver 0.38.0 和 ffmpeg。
+
+- 需要 Docker daemon；首次使用会在镜像缺失时构建按内容与架构寻址的 bundled image。AMD64 使用 Google Chrome，ARM64 使用 Debian Chromium，无需 Rosetta 仿真。
+- 容器按工作区懒启动，在 runtime 销毁或插件行关闭时移除。命名 Cua profile 默认使用按工作区隔离的 home volume，不随容器删除。
+- 仅支持 `launch: "isolated"`；宿主机 `existing` / `desktop` 会被拒绝，`native`-to-local fallback 不适用。
+- 回放视频在容器内通过 `x11grab` 采集，经 bind mount 写入原有 Run 视频目录。
+- DSH sandbox policy 不约束容器内部。
+
+`image`、构建开关、显示尺寸、超时与 profile 持久化等字段及默认值见 [REFERENCE.md](REFERENCE.md#docker-backend)。
 
 ## 隐私与安全
 
@@ -180,6 +200,7 @@ pnpm exec vitest run          # 全量单测
 pnpm build
 pnpm check:boundary
 pnpm test:activity            # Playwright activity-view e2e
+DSH_DOCKER_E2E=1 pnpm exec vitest run tests/integration/docker-runtime.spec.ts  # 真实 Docker 浏览器与录像
 ```
 
 CI 在 macOS 上跑 typecheck/单测/build/boundary，在 Windows 上跑 Web 平台适配单测与 build，在 Ubuntu 上跑 Playwright e2e。

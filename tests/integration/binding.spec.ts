@@ -268,9 +268,10 @@ describe('CuaBrowserDriver / Session Binding', () => {
         }
         if (name === 'list_windows') {
           return result({
+            // Linux X11 omits `layer`; the driver must still bind these windows.
             windows: [
-              { pid: 111, window_id: 1, layer: 0, bounds: { width: 1200, height: 800 } },
-              { pid: 900, window_id: 91, layer: 0, is_on_screen: true, bounds: { width: 1200, height: 800 } },
+              { pid: 111, window_id: 1, bounds: { width: 1200, height: 800 } },
+              { pid: 900, window_id: 91, is_on_screen: true, bounds: { width: 1200, height: 800 } },
             ],
           })
         }

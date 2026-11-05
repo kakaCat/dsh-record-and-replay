@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Docker browser recording and replay</title>
+  <rect x="6" y="14" width="52" height="40" rx="7" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+  <path d="M6 24h52M16 24v30M48 24v30" stroke="#2563EB" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  <path d="M21 37a11 11 0 0 1 17-8l3 3M41 29v6h-6" stroke="#2563EB" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M43 39a11 11 0 0 1-17 8l-3-3M23 47v-6h6" stroke="#2563EB" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="38" r="4.5" fill="#EF4444"/>
+</svg>

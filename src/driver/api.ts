@@ -102,6 +102,8 @@ export class BrowserDriverError extends Error {
  */
 export interface BrowserDriver {
   readonly id: string
+  /** Audit label for the selected transport/execution environment, when known. */
+  readonly transport?: string
 
   /** `launch` lets a driver advertise different actions per binding kind. */
   capabilities(launch?: LaunchMode): Promise<DriverCapabilities>
